@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-24T11:48:22.588Z",
+  "productionDatabaseWrites": false,
+  "infrastructureChanges": false,
+  "checks": [
+    {
+      "check": "diagnostic-config",
+      "status": "PASS",
+      "stagingAliasUsed": false,
+      "region": "auto",
+      "endpointMatchesAccount": true,
+      "publicDelivery": "r2.dev",
+      "environment": "development",
+      "purgeMode": "disabled"
+    },
+    {
+      "check": "staging-bucket-connectivity",
+      "status": "PASS"
+    },
+    {
+      "check": "public-bucket-connectivity",
+      "status": "PASS"
+    },
+    {
+      "check": "staging-cors-policy-read",
+      "status": "UNVERIFIED",
+      "error": "AccessDenied",
+      "httpStatus": 403,
+      "note": "Object-scoped credentials may intentionally lack bucket configuration access."
+    },
+    {
+      "check": "cors:http://localhost:3000",
+      "status": "PASS",
+      "httpStatus": 204,
+      "originAllowed": true,
+      "wildcard": false,
+      "requiredHeadersAllowed": true
+    },
+    {
+      "check": "cors:http://127.0.0.1:3000",
+      "status": "PASS",
+      "httpStatus": 204,
+      "originAllowed": true,
+      "wildcard": false,
+      "requiredHeadersAllowed": true
+    },
+    {
+      "check": "cors:https://ann-r2-probe.invalid",
+      "status": "PASS",
+      "httpStatus": 403,
+      "originAllowed": false,
+      "wildcard": false,
+      "requiredHeadersAllowed": false
+    },
+    {
+      "check": "hosted-supabase-r2-rpcs",
+      "status": "FAIL",
+      "missingRpcs": [
+        "r2_create_upload",
+        "r2_claim_upload",
+        "r2_plan_promotion",
+        "r2_finish_upload",
+        "r2_fail_upload",
+        "r2_prepare_cleanup"
+      ],
+      "productMediaTableExposed": false,
+      "usedDiagnosticAliases": true
+    },
+    {
+      "check": "hosted-supabase-r2-columns",
+      "status": "FAIL",
+      "httpStatus": 404,
+      "code": "PGRST205"
+    }
+  ],
+  "testScope": {
+    "product": "b79e6fde-d676-4c52-943e-77143b38768a",
+    "media": "9cf70d0f-e298-4e51-99bb-ae0bf9845ba4",
+    "token": "7c513239-7575-4aef-a97d-1b11336c2d57",
+    "stagingKey": "staging/b79e6fde-d676-4c52-943e-77143b38768a/9cf70d0f-e298-4e51-99bb-ae0bf9845ba4"
+  }
+}

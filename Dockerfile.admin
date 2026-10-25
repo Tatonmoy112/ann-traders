@@ -1,0 +1,29 @@
+FROM node:24-alpine AS base
+WORKDIR /app
+RUN npm install -g pnpm@10.34.7
+FROM base AS builder
+COPY . .
+RUN pnpm install --frozen-lockfile
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ARG R2_ACCOUNT_ID
+ARG R2_PUBLIC_BASE_URL
+ARG R2_ENVIRONMENT=production
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ENV R2_ACCOUNT_ID=$R2_ACCOUNT_ID
+ENV R2_PUBLIC_BASE_URL=$R2_PUBLIC_BASE_URL
+ENV R2_ENVIRONMENT=$R2_ENVIRONMENT
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN pnpm --filter @ann/admin build
+FROM node:24-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+COPY --from=builder --chown=node:node /app/apps/admin/.next/standalone ./
+COPY --from=builder --chown=node:node /app/apps/admin/.next/static ./apps/admin/.next/static
+COPY --from=builder --chown=node:node /app/apps/admin/public ./apps/admin/public
+USER node
+EXPOSE 3000
+CMD ["node", "apps/admin/server.js"]

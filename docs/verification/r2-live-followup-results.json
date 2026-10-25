@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-24T11:15:21.236Z",
+  "hostedDatabaseWrites": false,
+  "customDomainImageRequests": false,
+  "checks": [
+    {
+      "check": "server-side-private-read",
+      "status": "PASS",
+      "bytesMatch": true
+    },
+    {
+      "check": "anonymous-staging-api-get-denied",
+      "status": "PASS",
+      "httpStatus": 400,
+      "xmlCode": "InvalidArgument",
+      "note": "This does not establish whether a public staging domain is disabled."
+    },
+    {
+      "check": "actual-image-verifier",
+      "status": "PASS",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "outputs": [
+        {
+          "kind": "thumbnail",
+          "dimensions": [
+            320,
+            240
+          ],
+          "bytes": 216
+        },
+        {
+          "kind": "card",
+          "dimensions": [
+            768,
+            576
+          ],
+          "bytes": 866
+        },
+        {
+          "kind": "detail",
+          "dimensions": [
+            1024,
+            768
+          ],
+          "bytes": 1478
+        }
+      ],
+      "corruptBytesRejected": true,
+      "wrongMimeRejected": true
+    },
+    {
+      "check": "promotion-start",
+      "status": "INFO",
+      "kind": "thumbnail"
+    },
+    {
+      "check": "public-promotion-thumbnail",
+      "status": "PASS",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "digestMatches": true
+    },
+    {
+      "check": "promotion-start",
+      "status": "INFO",
+      "kind": "card"
+    },
+    {
+      "check": "public-promotion-card",
+      "status": "PASS",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "digestMatches": true
+    },
+    {
+      "check": "promotion-start",
+      "status": "INFO",
+      "kind": "detail"
+    },
+    {
+      "check": "public-promotion-detail",
+      "status": "PASS",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "digestMatches": true
+    },
+    {
+      "check": "local-sql-media-attachment",
+      "status": "PASS",
+      "hostedSupabase": false
+    },
+    {
+      "check": "local-sql-detach-history",
+      "status": "PASS"
+    },
+    {
+      "check": "local-sql-active-capability-cleanup-denied",
+      "status": "PASS"
+    },
+    {
+      "check": "cleanup-plan-worker-contract",
+      "status": "FAIL",
+      "stagingBucketPresent": false,
+      "publicBucketPresent": false,
+      "objects": 3
+    },
+    {
+      "check": "worker-incomplete-plan-fails-closed",
+      "status": "PASS"
+    },
+    {
+      "check": "expired-capability-rejected",
+      "status": "PASS",
+      "httpStatus": 403
+    },
+    {
+      "check": "custom-domain-reachability",
+      "status": "FAIL",
+      "error": "TypeError",
+      "code": null,
+      "httpStatus": null
+    },
+    {
+      "check": "cdn-purge-live",
+      "status": "BLOCKED",
+      "reason": "CLOUDFLARE_ZONE_ID and CLOUDFLARE_CACHE_PURGE_TOKEN are missing; no generated object was requested through CDN."
+    },
+    {
+      "check": "local-database-rollback",
+      "status": "PASS"
+    },
+    {
+      "check": "public-test-object-deletion",
+      "status": "PASS",
+      "kind": "detail.webp",
+      "authenticatedHeadAfterDelete": 404,
+      "repeatedDeleteSucceeded": true
+    },
+    {
+      "check": "public-test-object-deletion",
+      "status": "PASS",
+      "kind": "card.webp",
+      "authenticatedHeadAfterDelete": 404,
+      "repeatedDeleteSucceeded": true
+    },
+    {
+      "check": "public-test-object-deletion",
+      "status": "PASS",
+      "kind": "thumbnail.webp",
+      "authenticatedHeadAfterDelete": 404,
+      "repeatedDeleteSucceeded": true
+    },
+    {
+      "check": "public-cleanup-summary",
+      "status": "PASS",
+      "remainingPublicObjects": 0,
+      "stagingCleanupHandledByOriginalProbe": true
+    }
+  ]
+}

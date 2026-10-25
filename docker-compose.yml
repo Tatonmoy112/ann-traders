@@ -1,0 +1,16 @@
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+        R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+        R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL}
+        R2_ENVIRONMENT: ${R2_ENVIRONMENT:-production}
+    env_file: apps/admin/.env.local
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+# Supabase CLI owns its own containers; do not duplicate them here.

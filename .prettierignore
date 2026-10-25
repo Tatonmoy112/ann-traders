@@ -1,0 +1,11 @@
+reference admin panel
+reference client panel
+env.md
+.pnpm-store
+.local-db
+node_modules
+**/.next
+**/.next-e2e
+test-results
+pnpm-lock.yaml
+supabase/migrations

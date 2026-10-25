@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/.next-e2e
+**/.git
+.pnpm-store
+.local-db*
+.local-r2
+.turbo
+**/.env*
+env.md
+reference admin panel
+reference client panel
+test-results
+playwright-report

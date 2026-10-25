@@ -1,0 +1,25 @@
+node_modules/
+.next/
+**/.next-e2e/
+.deno-cache/
+.turbo/
+.pnpm-store/
+.env*
+!.env.example
+env.md
+supabase/.temp/
+supabase/.branches/
+playwright-report/
+test-results/
+coverage/
+.local-db/
+.local-r2/
+.local-db.log
+.local-db-error.log
+*.tsbuildinfo
+.vercel/
+.DS_Store
+Thumbs.db
+reference*/
+"reference admin panel/"
+"reference client panel/"

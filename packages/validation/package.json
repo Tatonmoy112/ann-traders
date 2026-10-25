@@ -1,0 +1,9 @@
+{
+  "name": "@ann/validation",
+  "private": true,
+  "version": "0.0.0",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "zod": "4.6.7"
+  }
+}

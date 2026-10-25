@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/catalog-worker",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
+

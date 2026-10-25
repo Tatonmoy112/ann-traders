@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-24T15:16:36.803Z",
+  "localSupabase": true,
+  "hostedWrites": false,
+  "checks": [
+    {
+      "check": "public-self-signup-remains-disabled",
+      "status": "PASS"
+    },
+    {
+      "check": "real-local-supabase-authentication",
+      "status": "PASS"
+    },
+    {
+      "check": "authenticated-upload-session",
+      "status": "PASS"
+    },
+    {
+      "check": "browser-put-server-verification-and-attachment",
+      "status": "PASS"
+    },
+    {
+      "check": "https-r2-dev-public-generated-images",
+      "status": "PASS",
+      "variants": 3,
+      "cacheControl": "no-store",
+      "tlsVerification": "enabled"
+    },
+    {
+      "check": "unverified-original-not-in-public-bucket",
+      "status": "PASS"
+    },
+    {
+      "check": "repeated-browser-capability-put-rejected",
+      "status": "PASS",
+      "httpStatus": 412
+    },
+    {
+      "check": "cross-origin-mutation-rejected",
+      "status": "PASS"
+    },
+    {
+      "check": "unauthenticated-completion-rejected",
+      "status": "PASS"
+    },
+    {
+      "check": "invalid-file-session",
+      "status": "INFO"
+    },
+    {
+      "check": "actual-browser-invalid-image-rejected-before-promotion",
+      "status": "PASS"
+    },
+    {
+      "check": "authenticated-detach-preserves-history",
+      "status": "PASS"
+    },
+    {
+      "check": "local-edge-cleanup-invocation",
+      "status": "PASS",
+      "completed": 1,
+      "failed": 0
+    },
+    {
+      "check": "local-edge-cleanup-invocation",
+      "status": "PASS",
+      "completed": 1,
+      "failed": 0
+    },
+    {
+      "check": "local-edge-cleanup-invocation",
+      "status": "PASS",
+      "completed": 1,
+      "failed": 0
+    },
+    {
+      "check": "local-edge-cleanup-invocation",
+      "status": "PASS",
+      "completed": 1,
+      "failed": 0
+    },
+    {
+      "check": "object-cleanup-confirmation",
+      "status": "PASS",
+      "scope": "staging",
+      "httpStatus": 404
+    },
+    {
+      "check": "object-cleanup-confirmation",
+      "status": "PASS",
+      "scope": "staging",
+      "httpStatus": 404
+    },
+    {
+      "check": "object-cleanup-confirmation",
+      "status": "PASS",
+      "scope": "public",
+      "httpStatus": 404
+    },
+    {
+      "check": "object-cleanup-confirmation",
+      "status": "PASS",
+      "scope": "public",
+      "httpStatus": 404
+    },
+    {
+      "check": "object-cleanup-confirmation",
+      "status": "PASS",
+      "scope": "public",
+      "httpStatus": 404
+    }
+  ]
+}

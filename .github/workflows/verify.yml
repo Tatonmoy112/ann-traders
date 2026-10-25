@@ -1,0 +1,49 @@
+name: Verify
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ann_local
+          POSTGRES_PASSWORD: local-test-only
+          POSTGRES_DB: ann_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://ann_local:local-test-only@localhost:5432/ann_test
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/local-postgres-bootstrap.sql
+      - run: for file in supabase/migrations/*.sql; do psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$file" || exit 1; done
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm build
+      - run: pnpm worker:check
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: test-results/
+      - run: pnpm audit --prod --audit-level high
+  supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      - run: supabase start
+      - run: supabase db reset && supabase test db
+# No production credentials, migration application or deployment in pull-request CI.

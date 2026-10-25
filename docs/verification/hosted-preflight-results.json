@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-24T15:57:03.181Z",
+  "remoteWrites": false,
+  "tlsVerification": true,
+  "status": "BLOCKED",
+  "code": "ENOTFOUND",
+  "reason": "Hosted database hostname does not resolve",
+  "dns": {
+    "ipv4": {
+      "resolves": false,
+      "code": "ENODATA"
+    },
+    "ipv6": {
+      "resolves": true
+    }
+  }
+}

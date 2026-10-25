@@ -1,0 +1,11 @@
+# Worker and durable outbox
+
+R2 update: every image session records a delayed `r2.cleanup` event before returning a PUT capability. `image.retired` handles R2 or legacy Images by provider. `r2_prepare_cleanup` fences expired work and checks canonical references; the shared AWS SDK adapter removes exact recorded keys and requires CDN purge before production acknowledgement. Local development explicitly uses disabled purge with uncached r2.dev delivery. Worker batch size is one within the 120-second lease. Bucket/untrusted-domain mismatch, active capabilities/leases and provider/purge failure retry safely. `pnpm media:functions:local` serves the handler and `pnpm media:worker:local` polls it only on loopback Supabase. Neither schedules or invokes a hosted worker. See [R2 lifecycle](r2-image-lifecycle.md).
+
+`private.outbox_events` is written atomically by catalog lifecycle and image detach RPCs. It stores stable event ID, entity/revision, payload, created time, attempts, lease, next available time, completion and dead-letter state. Worker functions are EXECUTE-granted only to service_role.
+
+`claim_catalog_jobs` selects at most 25 messages (consumer uses 10) with `FOR UPDATE SKIP LOCKED`, then leases them for 120 seconds. Handler HTTP operations time out after 10 seconds and run sequentially. Acknowledgements require the claimed attempt number. Failure schedules exponential backoff capped at one hour, with dead letters after eight attempts. Repeated image DELETE treats 404 as success; invalidation receiver must deduplicate stable event IDs. An expired lease can result in repeated external work, so no exactly-once claim is made.
+
+The consumer checks `CATALOG_WORKER_SECRET` and logs only job UUID/attempt. Use a different worker secret from the catalog HMAC signing secret. Secrets belong in Edge environment/Vault. No browser may claim or acknowledge work.
+
+Deployment/scheduling, PGMQ transport, Cron provisioning and automated alerting remain unverified/unfinished. Stale R2 session reconciliation is implemented in the ledger consumer; legacy Images orphan reconciliation still requires operator review. This is executable code, not a claim of a scheduled production service. See ADR 0002 for the deliberate outbox-first scope decision.

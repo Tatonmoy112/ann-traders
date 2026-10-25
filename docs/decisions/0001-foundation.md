@@ -1,0 +1,7 @@
+# ADR 0001 — Application and trust boundaries
+
+Accepted 2026-10-24. Create `apps/admin` and shared workspace packages as requested by the master prompt. Keep `admin panel`, `client panel`, and both references untouched. `apps/catalog` contains only a future integration contract, no deployed customer application.
+
+Use Supabase SSR cookies and claims verification; every protected operation checks the current active database profile. Use ordinary authenticated credentials for catalog operations. Private narrowly scoped PostgreSQL definer helpers support role lookup, atomic guarded writes, and auditing; the exposed wrappers use invoker security and never accept arbitrary SQL or table names. Table mutation grants are withheld where invariants require RPC. Public reads use a separate sanitized projection with only published nondeleted rows. No service-role key in browser or ordinary CRUD.
+
+Use local state/URL filters and TanStack Query, not Redux (no justified cross-page client state). Decimal values remain strings in forms. Product descriptions are plain text, so no unsafe HTML rendering. Unpublish before editing published relationships; this gives a simple enforceable invariant at the cost of brief catalog unavailability during edits. Public cache revocation cannot guarantee immediate withdrawal of already downloaded media; document download authorization is checked at access time.

@@ -1,0 +1,43 @@
+{
+  "verifiedAt": "2026-10-24T15:44:05.467Z",
+  "remoteWrites": false,
+  "existingDatabaseChanges": false,
+  "checks": [
+    {
+      "check": "Postflight passes against the actual local Supabase stack",
+      "status": "PASS"
+    },
+    {
+      "check": "Populated local application is rejected without data changes",
+      "status": "PASS"
+    },
+    {
+      "check": "An existing migration ledger blocks a baseline and the fixture rolls back",
+      "status": "PASS"
+    },
+    {
+      "check": "Late failure rolls back the entire schema and PDF bucket insert",
+      "status": "PASS"
+    },
+    {
+      "check": "Atomic baseline installs all 28 tables, RLS, R2 grants, public keys and private PDFs",
+      "status": "PASS"
+    },
+    {
+      "check": "Reapplying an installed baseline fails safely",
+      "status": "PASS"
+    },
+    {
+      "check": "Unrelated public data blocks the baseline and remains untouched",
+      "status": "PASS"
+    },
+    {
+      "check": "Source and bundle SHA-256 checksums match",
+      "status": "PASS"
+    }
+  ],
+  "databases": [
+    "ann_release_rollback_1792856645539",
+    "ann_release_collision_1792856648011"
+  ]
+}

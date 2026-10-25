@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-24T15:23:22.889Z",
+  "remoteWrites": false,
+  "checks": [
+    {
+      "check": "hosted-migration-history",
+      "status": "unavailable",
+      "error": "Error",
+      "code": "ENOTFOUND"
+    }
+  ],
+  "hostedLedgerEvidence": {
+    "source": "User-provided hosted SQL Editor result",
+    "code": "42P01",
+    "relation": "supabase_migrations.schema_migrations",
+    "exists": false
+  },
+  "repositoryMigrations": [
+    "20261024000100_core.sql",
+    "20261024000200_integrity.sql",
+    "20261024000300_security_rpc.sql",
+    "20261024000400_relations_search.sql",
+    "20261024000500_media.sql",
+    "20261024000600_hardening.sql",
+    "20261024000700_audit_and_public.sql",
+    "20261024000800_outbox.sql",
+    "20261024000900_query_guards.sql",
+    "20261024001000_domain_checks.sql",
+    "20261024001100_concurrent_publication.sql",
+    "20261024001200_r2_media.sql",
+    "20261024001300_r2_cleanup_bucket_contract.sql",
+    "20261024001400_public_image_keys.sql"
+  ],
+  "requiredMigrationChain": [
+    "20261024000100_core.sql",
+    "20261024000200_integrity.sql",
+    "20261024000300_security_rpc.sql",
+    "20261024000400_relations_search.sql",
+    "20261024000500_media.sql",
+    "20261024000600_hardening.sql",
+    "20261024000700_audit_and_public.sql",
+    "20261024000800_outbox.sql",
+    "20261024000900_query_guards.sql",
+    "20261024001000_domain_checks.sql",
+    "20261024001100_concurrent_publication.sql",
+    "20261024001200_r2_media.sql",
+    "20261024001300_r2_cleanup_bucket_contract.sql",
+    "20261024001400_public_image_keys.sql"
+  ],
+  "missingExposedRpcs": [
+    "create_product_draft",
+    "save_product_draft",
+    "product_publish_errors",
+    "product_lifecycle",
+    "save_product_relation",
+    "list_admin_products",
+    "stage_image",
+    "attach_verified_image",
+    "attach_verified_document",
+    "product_media_action",
+    "manage_admin",
+    "claim_catalog_jobs",
+    "complete_catalog_job",
+    "image_asset_referenced",
+    "r2_create_upload",
+    "r2_claim_upload",
+    "r2_plan_promotion",
+    "r2_finish_upload",
+    "r2_fail_upload",
+    "r2_prepare_cleanup"
+  ],
+  "missingExposedTables": [
+    "admin_profiles",
+    "products",
+    "product_media",
+    "product_documents"
+  ],
+  "migrationHistoryVerified": false
+}

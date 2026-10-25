@@ -1,0 +1,26 @@
+[
+  {
+    "check": "custom-domain-https",
+    "status": "FAIL",
+    "error": "TypeError",
+    "causeCode": "ERR_TLS_CERT_ALTNAME_INVALID"
+  },
+  {
+    "check": "custom-domain-dns",
+    "status": "PASS"
+  },
+  {
+    "check": "browser-cors:http://localhost:3000",
+    "status": "FAIL",
+    "browserFetchBlocked": true,
+    "error": "TypeError",
+    "signedCapabilityUsed": false
+  },
+  {
+    "check": "browser-cors:http://127.0.0.1:3000",
+    "status": "FAIL",
+    "browserFetchBlocked": true,
+    "error": "TypeError",
+    "signedCapabilityUsed": false
+  }
+]

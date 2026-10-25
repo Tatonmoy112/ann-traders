@@ -1,0 +1,41 @@
+{
+  "name": "@ann/admin",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@ann/database": "workspace:*",
+    "@ann/domain": "workspace:*",
+    "@ann/ui": "workspace:*",
+    "@ann/validation": "workspace:*",
+    "@hookform/resolvers": "5.9.2",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.118.0",
+    "@tanstack/react-query": "5.104.5",
+    "@tanstack/react-table": "8.21.3",
+    "lucide-react": "0.468.0",
+    "next": "16.4.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "7.91.0",
+    "server-only": "0.0.1",
+    "sharp": "0.35.5",
+    "zod": "4.6.7",
+    "@ann/storage": "workspace:*"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  }
+}

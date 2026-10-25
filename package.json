@@ -1,0 +1,37 @@
+{
+  "name": "ann-traders",
+  "private": true,
+  "packageManager": "pnpm@10.34.7",
+  "scripts": {
+    "dev": "pnpm --filter @ann/admin dev",
+    "dev:admin": "pnpm --filter @ann/admin dev",
+    "dev:client": "pnpm --filter @ann/client dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "lint": "turbo lint",
+    "test": "vitest run",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:types": "node scripts/generate-types.mjs",
+    "test:e2e": "playwright test",
+    "worker:check": "deno check --config supabase/functions/catalog-worker/deno.json supabase/functions/catalog-worker/index.ts",
+    "media:functions:local": "supabase functions serve catalog-worker --env-file supabase/functions/.env.worker.local --no-verify-jwt",
+    "media:worker:local": "node --experimental-transform-types scripts/local-media-worker.mjs --watch",
+    "staging:prepare": "node scripts/prepare-staging-release.mjs",
+    "staging:verify:local": "node scripts/verify-staging-release.mjs",
+    "staging:preflight": "node scripts/run-hosted-preflight.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "deno": "2.9.6",
+    "pg": "8.23.1",
+    "prettier": "3.9.10",
+    "supabase": "2.122.0",
+    "turbo": "2.11.10",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

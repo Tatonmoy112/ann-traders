@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-24T11:13:45.019Z",
+  "productionDatabaseWrites": false,
+  "infrastructureChanges": false,
+  "checks": [
+    {
+      "check": "diagnostic-config",
+      "status": "PASS",
+      "stagingAliasUsed": true,
+      "region": "auto",
+      "endpointMatchesAccount": true,
+      "publicOriginIsHttpsCustomHost": true
+    },
+    {
+      "check": "staging-bucket-connectivity",
+      "status": "PASS"
+    },
+    {
+      "check": "public-bucket-connectivity",
+      "status": "PASS"
+    },
+    {
+      "check": "staging-cors-policy-read",
+      "status": "UNVERIFIED",
+      "error": "AccessDenied",
+      "httpStatus": 403,
+      "note": "Object-scoped credentials may intentionally lack bucket configuration access."
+    },
+    {
+      "check": "cors:http://localhost:3000",
+      "status": "FAIL",
+      "httpStatus": 403,
+      "originAllowed": false,
+      "wildcard": false,
+      "requiredHeadersAllowed": false
+    },
+    {
+      "check": "cors:http://127.0.0.1:3000",
+      "status": "FAIL",
+      "httpStatus": 403,
+      "originAllowed": false,
+      "wildcard": false,
+      "requiredHeadersAllowed": false
+    },
+    {
+      "check": "cors:https://ann-r2-probe.invalid",
+      "status": "PASS",
+      "httpStatus": 403,
+      "originAllowed": false,
+      "wildcard": false,
+      "requiredHeadersAllowed": false
+    },
+    {
+      "check": "hosted-supabase-r2-rpcs",
+      "status": "FAIL",
+      "missingRpcs": [
+        "r2_create_upload",
+        "r2_claim_upload",
+        "r2_plan_promotion",
+        "r2_finish_upload",
+        "r2_fail_upload",
+        "r2_prepare_cleanup"
+      ],
+      "productMediaTableExposed": false,
+      "usedDiagnosticAliases": true
+    },
+    {
+      "check": "hosted-supabase-r2-columns",
+      "status": "FAIL",
+      "httpStatus": 404,
+      "code": "PGRST205"
+    },
+    {
+      "check": "local-unverified-attachment-denied",
+      "status": "PASS"
+    },
+    {
+      "check": "presigned-put-live-r2",
+      "status": "PASS",
+      "httpStatus": 200,
+      "signedHeaders": "content-length;content-type;host;if-none-match",
+      "ttlSeconds": 5
+    },
+    {
+      "check": "repeated-put-rejected",
+      "status": "PASS",
+      "httpStatus": 412
+    },
+    {
+      "check": "object-lifecycle",
+      "status": "FAIL",
+      "error": "AssertionError",
+      "httpStatus": null
+    },
+    {
+      "check": "local-fixture-rollback",
+      "status": "PASS"
+    },
+    {
+      "check": "cleanup:staging:0c2ccafe-2416-48b4-8752-26d3c5ed1df4",
+      "status": "PASS",
+      "authenticatedHeadAfterDelete": 404
+    },
+    {
+      "check": "test-object-cleanup-summary",
+      "status": "PASS",
+      "remainingObjects": 0,
+      "publicBytesFetchedViaCdn": false
+    }
+  ],
+  "testScope": {
+    "product": "d09ad3eb-b6f1-4de8-b05c-453f5724d418",
+    "media": "0c2ccafe-2416-48b4-8752-26d3c5ed1df4",
+    "token": "250dd31e-261e-4de6-ad0f-e1c46d649bac",
+    "stagingKey": "staging/d09ad3eb-b6f1-4de8-b05c-453f5724d418/0c2ccafe-2416-48b4-8752-26d3c5ed1df4"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "scope": "ANN Traders staging baseline 001–014",
+  "generatedBy": "scripts/prepare-staging-release.mjs",
+  "migrations": [
+    {
+      "file": "20261024000100_core.sql",
+      "version": "20261024000100",
+      "sha256": "3ab8b9e72b1aca0eae631398cd34f12a0809f6c2c5dd31a1b6bc1bfc6e750afe",
+      "bytes": 14857
+    },
+    {
+      "file": "20261024000200_integrity.sql",
+      "version": "20261024000200",
+      "sha256": "98329d74b6f85007da408eeb25cbef62b07f96af113a37127b77068cac91779e",
+      "bytes": 8023
+    },
+    {
+      "file": "20261024000300_security_rpc.sql",
+      "version": "20261024000300",
+      "sha256": "2b7eb4b041bf6a513ccba986676fa955c44e5db88e156169535b53ade833741a",
+      "bytes": 15872
+    },
+    {
+      "file": "20261024000400_relations_search.sql",
+      "version": "20261024000400",
+      "sha256": "904b201b11b82db64ddb21bce945d3703637c9e8d1f794e7a05923046d1a05b8",
+      "bytes": 6361
+    },
+    {
+      "file": "20261024000500_media.sql",
+      "version": "20261024000500",
+      "sha256": "f37f623a481afb317003a94e8bd045efa39c82154885c6dd74bc31975c47240b",
+      "bytes": 5568
+    },
+    {
+      "file": "20261024000600_hardening.sql",
+      "version": "20261024000600",
+      "sha256": "ed9694006b2d44124a2bcbed11b729be3e8699c8c3c79143c12b7a8f8b23c584",
+      "bytes": 3628
+    },
+    {
+      "file": "20261024000700_audit_and_public.sql",
+      "version": "20261024000700",
+      "sha256": "d15f5302c081f8d9f841716703edeefbb2a4782b23b3c2fddfbb62ae5836b725",
+      "bytes": 5804
+    },
+    {
+      "file": "20261024000800_outbox.sql",
+      "version": "20261024000800",
+      "sha256": "bda028a563f8cccfbef6069c8e7e683b8b7ad77df8a074ce482783cac12e06dc",
+      "bytes": 2617
+    },
+    {
+      "file": "20261024000900_query_guards.sql",
+      "version": "20261024000900",
+      "sha256": "012e286a08ba6d0ad0bf5baaa1bd5f8e962c09cc74e2dad1e6a02ff3d727b4d0",
+      "bytes": 2765
+    },
+    {
+      "file": "20261024001000_domain_checks.sql",
+      "version": "20261024001000",
+      "sha256": "299ea873edf4247156f753cbde1bf1a2f1ec544182e054aea828c3e9ed2a077c",
+      "bytes": 2537
+    },
+    {
+      "file": "20261024001100_concurrent_publication.sql",
+      "version": "20261024001100",
+      "sha256": "71710fbe9f88846e9af861a2959357b25e78be544d6329e83df9658181c76712",
+      "bytes": 2244
+    },
+    {
+      "file": "20261024001200_r2_media.sql",
+      "version": "20261024001200",
+      "sha256": "3243bb8d2a4d782537440ca61c3b25ee31a4d0acb2b6e465c934b384c530f7ff",
+      "bytes": 16718
+    },
+    {
+      "file": "20261024001300_r2_cleanup_bucket_contract.sql",
+      "version": "20261024001300",
+      "sha256": "9ad4d8dd7f54fe601e54a738de264af321d9111d31fc1de5a90edfc000a1b0c8",
+      "bytes": 1587
+    },
+    {
+      "file": "20261024001400_public_image_keys.sql",
+      "version": "20261024001400",
+      "sha256": "f4c1ff91eedc9fdec88876812a2cc221c389f8af09d90bc3ccfa55881a2e79c0",
+      "bytes": 3107
+    }
+  ],
+  "recordsSupabaseMigrationHistory": false,
+  "bundleSha256": "a841755c58d2c6b5b99877fd20ad2c9c926f2436b734f8e6dd7a31a4bb81de88",
+  "preflightSha256": "432016f50b2cd9e3422373ccbdd3bed994d8f2eb29280e9f830e322671117fbf",
+  "postflightSha256": "dbac6f95d561c9d2728d745640323b6aac06f90108c436d5a6bd13ab8d618d08"
+}

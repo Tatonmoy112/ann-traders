@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigins": ["https://admin.example.com"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type", "if-none-match"],
+    "ExposeHeaders": ["etag"],
+    "MaxAgeSeconds": 300
+  }
+]
