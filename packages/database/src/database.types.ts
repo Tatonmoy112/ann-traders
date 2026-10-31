@@ -3,80 +3,6 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
-      inquiries: {
-        Row: {
-          id: string;
-          reference_number: string;
-          full_name: string;
-          company_name: string;
-          email: string;
-          phone: string;
-          product_id: string | null;
-          product_name: string;
-          variant_sku: string | null;
-          target_quantity: number;
-          unit: string;
-          delivery_term: string | null;
-          notes: string | null;
-          status: string;
-          admin_notes: string | null;
-          quoted_amount: number | null;
-          quoted_currency: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          reference_number: string;
-          full_name: string;
-          company_name: string;
-          email: string;
-          phone: string;
-          product_id?: string | null;
-          product_name: string;
-          variant_sku?: string | null;
-          target_quantity: number;
-          unit: string;
-          delivery_term?: string | null;
-          notes?: string | null;
-          status?: string;
-          admin_notes?: string | null;
-          quoted_amount?: number | null;
-          quoted_currency?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          reference_number?: string;
-          full_name?: string;
-          company_name?: string;
-          email?: string;
-          phone?: string;
-          product_id?: string | null;
-          product_name?: string;
-          variant_sku?: string | null;
-          target_quantity?: number;
-          unit?: string;
-          delivery_term?: string | null;
-          notes?: string | null;
-          status?: string;
-          admin_notes?: string | null;
-          quoted_amount?: number | null;
-          quoted_currency?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'inquiries_product_id_fkey';
-            columns: ['product_id'];
-            isOneToOne: false;
-            referencedRelation: 'products';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
       admin_profiles: {
         Row: {
           id: string;
@@ -399,17 +325,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'category_attributes_attribute_id_fkey';
-            columns: ['attribute_id'];
-            isOneToOne: false;
-            referencedRelation: 'attribute_definitions';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'category_attributes_category_id_fkey';
             columns: ['category_id'];
             isOneToOne: false;
             referencedRelation: 'categories';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'category_attributes_attribute_id_fkey';
+            columns: ['attribute_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribute_definitions';
             referencedColumns: ['id'];
           },
         ];
@@ -536,6 +462,80 @@ export type Database = {
         };
         Relationships: [];
       };
+      inquiries: {
+        Row: {
+          id: string;
+          reference_number: string;
+          full_name: string;
+          company_name: string;
+          email: string;
+          phone: string;
+          product_id: string | null;
+          product_name: string;
+          variant_sku: string | null;
+          target_quantity: number;
+          unit: string;
+          delivery_term: string | null;
+          notes: string | null;
+          status: string;
+          admin_notes: string | null;
+          quoted_amount: number | null;
+          quoted_currency: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          reference_number: string;
+          full_name: string;
+          company_name: string;
+          email: string;
+          phone: string;
+          product_id?: string | null;
+          product_name: string;
+          variant_sku?: string | null;
+          target_quantity: number;
+          unit: string;
+          delivery_term?: string | null;
+          notes?: string | null;
+          status?: string;
+          admin_notes?: string | null;
+          quoted_amount?: number | null;
+          quoted_currency?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          reference_number?: string;
+          full_name?: string;
+          company_name?: string;
+          email?: string;
+          phone?: string;
+          product_id?: string | null;
+          product_name?: string;
+          variant_sku?: string | null;
+          target_quantity?: number;
+          unit?: string;
+          delivery_term?: string | null;
+          notes?: string | null;
+          status?: string;
+          admin_notes?: string | null;
+          quoted_amount?: number | null;
+          quoted_currency?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'inquiries_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       price_tiers: {
         Row: {
           id: string;
@@ -572,17 +572,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'price_tiers_quantity_unit_id_fkey';
-            columns: ['quantity_unit_id'];
-            isOneToOne: false;
-            referencedRelation: 'units';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'price_tiers_variant_price_id_fkey';
             columns: ['variant_price_id'];
             isOneToOne: false;
             referencedRelation: 'variant_prices';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'price_tiers_quantity_unit_id_fkey';
+            columns: ['quantity_unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
             referencedColumns: ['id'];
           },
         ];
@@ -603,17 +603,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'product_applications_application_id_fkey';
-            columns: ['application_id'];
-            isOneToOne: false;
-            referencedRelation: 'applications';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'product_applications_product_id_fkey';
             columns: ['product_id'];
             isOneToOne: false;
             referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'product_applications_application_id_fkey';
+            columns: ['application_id'];
+            isOneToOne: false;
+            referencedRelation: 'applications';
             referencedColumns: ['id'];
           },
         ];
@@ -657,18 +657,18 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: 'product_attribute_values_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'product_attribute_values_attribute_id_fkey';
             columns: ['attribute_id'];
             isOneToOne: false;
             referencedRelation: 'attribute_definitions';
             referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'product_attribute_values_option_id_attribute_id_fkey';
-            columns: ['option_id', 'attribute_id'];
-            isOneToOne: false;
-            referencedRelation: 'attribute_options';
-            referencedColumns: ['id', 'attribute_id'];
           },
           {
             foreignKeyName: 'product_attribute_values_option_id_fkey';
@@ -678,18 +678,18 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'product_attribute_values_product_id_fkey';
-            columns: ['product_id'];
-            isOneToOne: false;
-            referencedRelation: 'products';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'product_attribute_values_unit_id_fkey';
             columns: ['unit_id'];
             isOneToOne: false;
             referencedRelation: 'units';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'product_attribute_values_option_id_attribute_id_fkey';
+            columns: ['option_id', 'attribute_id'];
+            isOneToOne: false;
+            referencedRelation: 'attribute_options';
+            referencedColumns: ['id', 'attribute_id'];
           },
         ];
       };
@@ -726,6 +726,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: 'product_certifications_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'product_certifications_certification_id_fkey';
             columns: ['certification_id'];
             isOneToOne: false;
@@ -745,13 +752,6 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'product_documents';
             referencedColumns: ['id', 'product_id'];
-          },
-          {
-            foreignKeyName: 'product_certifications_product_id_fkey';
-            columns: ['product_id'];
-            isOneToOne: false;
-            referencedRelation: 'products';
-            referencedColumns: ['id'];
           },
         ];
       };
@@ -816,17 +816,17 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'product_documents_uploaded_by_fkey';
-            columns: ['uploaded_by'];
-            isOneToOne: false;
-            referencedRelation: 'admin_profiles';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'product_documents_variant_id_fkey';
             columns: ['variant_id'];
             isOneToOne: false;
             referencedRelation: 'product_variants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'product_documents_uploaded_by_fkey';
+            columns: ['uploaded_by'];
+            isOneToOne: false;
+            referencedRelation: 'admin_profiles';
             referencedColumns: ['id'];
           },
           {
@@ -854,17 +854,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'product_extra_categories_category_id_fkey';
-            columns: ['category_id'];
-            isOneToOne: false;
-            referencedRelation: 'categories';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'product_extra_categories_product_id_fkey';
             columns: ['product_id'];
             isOneToOne: false;
             referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'product_extra_categories_category_id_fkey';
+            columns: ['category_id'];
+            isOneToOne: false;
+            referencedRelation: 'categories';
             referencedColumns: ['id'];
           },
         ];
@@ -885,17 +885,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'product_industries_industry_id_fkey';
-            columns: ['industry_id'];
-            isOneToOne: false;
-            referencedRelation: 'industries';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'product_industries_product_id_fkey';
             columns: ['product_id'];
             isOneToOne: false;
             referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'product_industries_industry_id_fkey';
+            columns: ['industry_id'];
+            isOneToOne: false;
+            referencedRelation: 'industries';
             referencedColumns: ['id'];
           },
         ];
@@ -1319,18 +1319,18 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: 'variant_attribute_values_variant_id_fkey';
+            columns: ['variant_id'];
+            isOneToOne: false;
+            referencedRelation: 'product_variants';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'variant_attribute_values_attribute_id_fkey';
             columns: ['attribute_id'];
             isOneToOne: false;
             referencedRelation: 'attribute_definitions';
             referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'variant_attribute_values_option_id_attribute_id_fkey';
-            columns: ['option_id', 'attribute_id'];
-            isOneToOne: false;
-            referencedRelation: 'attribute_options';
-            referencedColumns: ['id', 'attribute_id'];
           },
           {
             foreignKeyName: 'variant_attribute_values_option_id_fkey';
@@ -1347,11 +1347,11 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'variant_attribute_values_variant_id_fkey';
-            columns: ['variant_id'];
+            foreignKeyName: 'variant_attribute_values_option_id_attribute_id_fkey';
+            columns: ['option_id', 'attribute_id'];
             isOneToOne: false;
-            referencedRelation: 'product_variants';
-            referencedColumns: ['id'];
+            referencedRelation: 'attribute_options';
+            referencedColumns: ['id', 'attribute_id'];
           },
         ];
       };
@@ -1379,17 +1379,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'variant_equipment_compatibility_equipment_model_id_fkey';
-            columns: ['equipment_model_id'];
-            isOneToOne: false;
-            referencedRelation: 'equipment_models';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'variant_equipment_compatibility_variant_id_fkey';
             columns: ['variant_id'];
             isOneToOne: false;
             referencedRelation: 'product_variants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'variant_equipment_compatibility_equipment_model_id_fkey';
+            columns: ['equipment_model_id'];
+            isOneToOne: false;
+            referencedRelation: 'equipment_models';
             referencedColumns: ['id'];
           },
         ];
@@ -1418,17 +1418,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'variant_fiber_composition_fiber_id_fkey';
-            columns: ['fiber_id'];
-            isOneToOne: false;
-            referencedRelation: 'fibers';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'variant_fiber_composition_variant_id_fkey';
             columns: ['variant_id'];
             isOneToOne: false;
             referencedRelation: 'product_variants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'variant_fiber_composition_fiber_id_fkey';
+            columns: ['fiber_id'];
+            isOneToOne: false;
+            referencedRelation: 'fibers';
             referencedColumns: ['id'];
           },
         ];
@@ -1469,17 +1469,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'variant_packaging_pack_unit_id_fkey';
-            columns: ['pack_unit_id'];
-            isOneToOne: false;
-            referencedRelation: 'units';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'variant_packaging_variant_id_fkey';
             columns: ['variant_id'];
             isOneToOne: false;
             referencedRelation: 'product_variants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'variant_packaging_pack_unit_id_fkey';
+            columns: ['pack_unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
             referencedColumns: ['id'];
           },
         ];
@@ -1532,23 +1532,80 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'variant_prices_price_unit_id_fkey';
-            columns: ['price_unit_id'];
-            isOneToOne: false;
-            referencedRelation: 'units';
-            referencedColumns: ['id'];
-          },
-          {
             foreignKeyName: 'variant_prices_variant_id_fkey';
             columns: ['variant_id'];
             isOneToOne: false;
             referencedRelation: 'product_variants';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'variant_prices_price_unit_id_fkey';
+            columns: ['price_unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
+            referencedColumns: ['id'];
+          },
         ];
       };
     };
-    Views: {};
+    Views: {
+      catalog_documents: {
+        Row: {
+          id: string | null;
+          product_id: string | null;
+          variant_id: string | null;
+          title: string | null;
+          document_type: string | null;
+        };
+        Relationships: [];
+      };
+      catalog_products: {
+        Row: {
+          id: string | null;
+          name: string | null;
+          slug: string | null;
+          product_code: string | null;
+          short_description: string | null;
+          description: string | null;
+          product_type: string | null;
+          country_of_origin: string | null;
+          is_featured: boolean | null;
+          is_new_arrival: boolean | null;
+          seo_title: string | null;
+          seo_description: string | null;
+          published_at: string | null;
+          updated_at: string | null;
+          category_name: string | null;
+          category_slug: string | null;
+          brand_name: string | null;
+          image_url: string | null;
+          image_variants: Json | null;
+          image_key: string | null;
+        };
+        Relationships: [];
+      };
+      catalog_variants: {
+        Row: {
+          id: string | null;
+          product_id: string | null;
+          sku: string | null;
+          variant_name: string | null;
+          model_number: string | null;
+          manufacturer_part_number: string | null;
+          sale_unit: string | null;
+          minimum_order_qty: string | null;
+          minimum_order_unit: string | null;
+          monthly_supply_capacity: string | null;
+          capacity_unit: string | null;
+          lead_time_days: number | null;
+          availability_status: string | null;
+          is_default: boolean | null;
+          prices: Json | null;
+          specifications: Json | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       attach_verified_document: {
         Args: {
@@ -1687,6 +1744,28 @@ export type Database = {
   public_catalog: {
     Tables: {};
     Views: {
+      brands: {
+        Row: {
+          id: string | null;
+          name: string | null;
+          slug: string | null;
+          country_code: string | null;
+          logo_path: string | null;
+        };
+        Relationships: [];
+      };
+      categories: {
+        Row: {
+          id: string | null;
+          name: string | null;
+          slug: string | null;
+          description: string | null;
+          parent_id: string | null;
+          image_path: string | null;
+          sort_order: number | null;
+        };
+        Relationships: [];
+      };
       documents: {
         Row: {
           id: string | null;
@@ -1694,6 +1773,77 @@ export type Database = {
           variant_id: string | null;
           title: string | null;
           document_type: string | null;
+          file_extension: string | null;
+          bytes: number | null;
+          product_name: string | null;
+          product_code: string | null;
+          product_slug: string | null;
+          created_at: string | null;
+        };
+        Relationships: [];
+      };
+      effective_prices: {
+        Row: {
+          id: string | null;
+          variant_id: string | null;
+          product_id: string | null;
+          currency_code: string | null;
+          price_type: string | null;
+          min_price: number | null;
+          max_price: number | null;
+          price_unit_id: string | null;
+          unit: string | null;
+          trade_term: string | null;
+          valid_from: string | null;
+          valid_until: string | null;
+        };
+        Relationships: [];
+      };
+      product_cards: {
+        Row: {
+          id: string | null;
+          slug: string | null;
+          name: string | null;
+          product_code: string | null;
+          short_description: string | null;
+          product_type: string | null;
+          country_of_origin: string | null;
+          is_featured: boolean | null;
+          is_new_arrival: boolean | null;
+          category_name: string | null;
+          category_slug: string | null;
+          brand_name: string | null;
+          brand_slug: string | null;
+          image_url: string | null;
+          image_key: string | null;
+          published_at: string | null;
+          updated_at: string | null;
+          display_price: Json | null;
+        };
+        Relationships: [];
+      };
+      product_details: {
+        Row: {
+          slug: string | null;
+          product: Json | null;
+          variants: Json | null;
+          documents: Json | null;
+          gallery: Json | null;
+        };
+        Relationships: [];
+      };
+      product_index: {
+        Row: {
+          id: string | null;
+          name: string | null;
+          product_code: string | null;
+          short_description: string | null;
+          published_at: string | null;
+          updated_at: string | null;
+          is_featured: boolean | null;
+          is_new_arrival: boolean | null;
+          category_slug: string | null;
+          brand_slug: string | null;
         };
         Relationships: [];
       };
@@ -1743,8 +1893,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      visibility: {
+        Row: { id: string | null; slug: string | null; revision: number | null };
+        Relationships: [];
+      };
     };
-    Functions: {};
+    Functions: {
+      list_product_cards: {
+        Args: {
+          category_filter?: string;
+          brand_filter?: string;
+          search_query?: string;
+          featured_only?: boolean;
+          new_only?: boolean;
+          page_number?: number;
+          page_size?: number;
+          sort_field?: string;
+          sort_ascending?: boolean;
+        };
+        Returns: Database['public_catalog']['Views']['product_cards']['Row'][];
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

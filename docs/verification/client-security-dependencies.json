@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-31T09:49:11.358Z",
+  "scope": "Workspace production dependency audit after removing the client Axios dependency",
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "dependencies": 179,
+    "devDependencies": 0,
+    "optionalDependencies": 0,
+    "totalDependencies": 179
+  },
+  "advisories": []
+}

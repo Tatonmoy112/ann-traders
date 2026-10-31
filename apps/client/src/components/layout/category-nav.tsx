@@ -14,7 +14,8 @@ export function CategoryNav() {
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['catalog', 'categories', 'tree'],
     queryFn: () => catalogApi.getCategories({ tree: true }),
-    staleTime: 5 * 60 * 1000,
+    enabled: isOpen,
+    staleTime: 30 * 1000,
   });
 
   // Close dropdown when clicking outside
@@ -67,7 +68,9 @@ export function CategoryNav() {
                 <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Loading categories...
               </div>
             ) : categories.length === 0 ? (
-              <div className="p-4 text-center text-xs text-slate-400">No active categories found.</div>
+              <div className="p-4 text-center text-xs text-slate-400">
+                No active categories found.
+              </div>
             ) : (
               categories.map((cat: CatalogCategory) => (
                 <div key={cat.id} className="p-1.5">
@@ -127,4 +130,3 @@ export function CategoryNav() {
     </div>
   );
 }
-

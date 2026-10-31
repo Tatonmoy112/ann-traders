@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-31T10:04:51.951Z",
+  "environment": "next start production build + local PostgreSQL anonymous views + PostgREST transport double; not hosted acceptance",
+  "checks": [
+    "/ server-rendered product content",
+    "/ no privileged/private data",
+    "/products server-rendered product content",
+    "/products no privileged/private data",
+    "/products/synthetic-paper-1 server-rendered product content",
+    "/products/synthetic-paper-1 no privileged/private data",
+    "12 bounded cards and next-page lookahead",
+    "explicit no-store response",
+    "lean cards without detail media manifests",
+    "unit-correct effective price",
+    "unknown category is empty",
+    "unknown brand is empty",
+    "malformed pagination bounded",
+    "category tree contract",
+    "public RFQ persistence removed",
+    "manual purge rejects unauthenticated callers",
+    "authorized manual purge succeeds",
+    "withdrawal hidden even with a warm detail cache",
+    "withdrawal hidden on the HTML detail route",
+    "withdrawn card excluded",
+    "visibility failures fail closed instead of serving stale cards"
+  ],
+  "measurements": [
+    {
+      "path": "/",
+      "status": 200,
+      "ttfbMs": 174.46,
+      "totalMs": 177.79,
+      "responseBytes": 52493
+    },
+    {
+      "path": "/products",
+      "status": 200,
+      "ttfbMs": 17.21,
+      "totalMs": 32.26,
+      "responseBytes": 81924
+    },
+    {
+      "path": "/products/synthetic-paper-1",
+      "status": 200,
+      "ttfbMs": 17.07,
+      "totalMs": 36.87,
+      "responseBytes": 67310
+    },
+    {
+      "path": "/api/catalog/products?pageSize=12",
+      "status": 200,
+      "ttfbMs": 14.38,
+      "totalMs": 14.88,
+      "responseBytes": 9673
+    },
+    {
+      "path": "/api/catalog/products?category=unknown-slug",
+      "status": 200,
+      "ttfbMs": 9.58,
+      "totalMs": 9.82,
+      "responseBytes": 85
+    },
+    {
+      "path": "/api/catalog/products?brand=unknown-slug",
+      "status": 200,
+      "ttfbMs": 7.64,
+      "totalMs": 7.88,
+      "responseBytes": 85
+    },
+    {
+      "path": "/api/catalog/products?page=NaN&pageSize=Infinity",
+      "status": 200,
+      "ttfbMs": 6.24,
+      "totalMs": 6.44,
+      "responseBytes": 9673
+    },
+    {
+      "path": "/api/catalog/categories?tree=true",
+      "status": 200,
+      "ttfbMs": 4.73,
+      "totalMs": 4.91,
+      "responseBytes": 180
+    },
+    {
+      "path": "/api/catalog/products/synthetic-paper-1",
+      "status": 200,
+      "ttfbMs": 12.73,
+      "totalMs": 12.96,
+      "responseBytes": 7152
+    },
+    {
+      "path": "/api/catalog/products?q=Synthetic%20Paper",
+      "status": 200,
+      "ttfbMs": 11.99,
+      "totalMs": 12.2,
+      "responseBytes": 9672
+    }
+  ]
+}

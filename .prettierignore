@@ -6,6 +6,10 @@ env.md
 node_modules
 **/.next
 **/.next-e2e
+**/.next-security
+.cache
+**/next-env.d.ts
+**/AGENTS.md
 test-results
 pnpm-lock.yaml
 supabase/migrations

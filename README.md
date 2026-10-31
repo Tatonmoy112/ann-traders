@@ -1,6 +1,6 @@
-# ANN Traders Admin
+# ANN Traders
 
-An independent Next.js 16 catalog administration application, built from the supplied 28-entity database design and admin UI reference. Includes a pnpm/Turborepo workspace, PostgreSQL migrations, Supabase SSR authentication, role/MFA checks, dictionary management, draft product editing, variants, price history, related records, publication validation, media/document integration routes, audit history and a future read-only catalog contract.
+Two independent Next.js 16 deployments share one Supabase database: `apps/admin` manages the catalog and `apps/client` serves the read-only public website. The public app includes `/`, `/products`, `/products/[slug]`, `/documents`, `/contact` and `/api/catalog/*`. It renders initial discovery data on the server using anonymous published-safe projections, bounded product cards and a short server data cache. The admin retains Supabase SSR authentication, roles/MFA, transactional editing/publication, price history, R2 media processing and audit history.
 
 **This is a tested development implementation, not a production readiness claim.** Live Supabase Auth/Storage, Cloudflare upload, invitation delivery, worker scheduling and deployment still require staging verification. Detailed remaining work is in [implementation status](docs/implementation-status.md). No remote database migrations or deployment have been performed.
 
@@ -88,7 +88,7 @@ See [verification evidence](docs/verification/results.md), [architecture](docs/a
 
 ## Deploy and maintain
 
-`apps/admin` is the Vercel project root; install using the root workspace lockfile and build with `pnpm --filter @ann/admin build`. Inject public connection configuration at build time and server secrets in the deployment environment. Set exact `APP_ORIGIN` and Supabase allowed redirect URLs to the chosen HTTPS admin origin. Rebuild after public configuration changes. Do not deploy `apps/catalog`: it is contract documentation only.
+Create separate deployment projects rooted at `apps/admin` and `apps/client`, using the root workspace lockfile. Build with `pnpm --filter @ann/admin build` and `pnpm --filter @ann/client build`, respectively. Configure the public app from [its own environment example](apps/client/.env.example), with only the publishable/anonymous database key; never copy admin secrets into it. Set exact admin `APP_ORIGIN` and Supabase allowed redirect URLs. Rebuild after public configuration changes. See [public catalog setup](apps/client/README.md) and [remediation evidence and rollout](docs/verification/public-catalog-remediation.md) before applying migrations or deploying.
 
 Docker files are supplied; Docker release execution is unverified while the daemon is unavailable. Run `docker compose --env-file apps/admin/.env.local build` followed by `docker compose --env-file apps/admin/.env.local up -d` once Docker is running. A local Supabase host exposed as `127.0.0.1` must be changed to a container-reachable URL for a containerized admin server; use a hosted dev project or documented host networking.
 

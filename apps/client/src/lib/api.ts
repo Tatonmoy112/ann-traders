@@ -1,4 +1,4 @@
-import api from './axios';
+import api from './http';
 import type {
   ProductListResponse,
   ProductDetailResponse,
@@ -16,27 +16,6 @@ export interface ProductQueryFilters {
   pageSize?: number;
   sort?: 'name' | 'updated_at' | 'published_at';
   ascending?: boolean;
-}
-
-export interface InquiryInput {
-  fullName: string;
-  companyName: string;
-  email: string;
-  phone: string;
-  productId: string;
-  productName: string;
-  variantSku?: string;
-  targetQuantity: number;
-  unit: string;
-  deliveryTerm?: string;
-  notes?: string;
-  faxNumber?: string;
-}
-
-export interface InquiryResponse {
-  success: boolean;
-  referenceNumber: string;
-  message: string;
 }
 
 export const catalogApi = {
@@ -82,12 +61,14 @@ export const catalogApi = {
   },
 
   // 6. Get public technical compliance documents repository
-  async getDocuments(filters: {
-    type?: string;
-    search?: string;
-    page?: number;
-    pageSize?: number;
-  } = {}): Promise<{
+  async getDocuments(
+    filters: {
+      type?: string;
+      search?: string;
+      page?: number;
+      pageSize?: number;
+    } = {},
+  ): Promise<{
     documents: import('./types').CatalogDocument[];
     total: number;
     page: number;
@@ -102,11 +83,6 @@ export const catalogApi = {
 
     const qs = params.toString();
     return api.get(`/api/catalog/documents${qs ? `?${qs}` : ''}`);
-  },
-
-  // 7. Submit B2B Request for Quotation (RFQ)
-  async submitInquiry(inquiry: InquiryInput): Promise<InquiryResponse> {
-    return api.post<InquiryResponse>('/api/catalog/inquiry', inquiry);
   },
 };
 

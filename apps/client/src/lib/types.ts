@@ -12,7 +12,7 @@ export interface CatalogProduct {
   slug: string;
   product_code: string;
   short_description: string | null;
-  description: string | null;
+  description?: string | null;
   product_type: string;
   country_of_origin: string | null;
   is_featured: boolean;
@@ -21,10 +21,23 @@ export interface CatalogProduct {
   category_slug: string;
   brand_name: string | null;
   image_url: string | null;
-  image_variants: ImageVariant[];
+  image_variants?: ImageVariant[];
   image_key: string | null;
   published_at: string;
   updated_at: string;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  display_price?: DisplayPrice;
+}
+
+export interface DisplayPrice {
+  type: 'fixed' | 'range' | 'on_request';
+  min?: string | null;
+  max?: string | null;
+  currency?: string;
+  unit?: string;
+  trade_term?: string | null;
+  valid_until?: string | null;
 }
 
 export interface PriceTier {
@@ -73,6 +86,7 @@ export interface CatalogVariant {
   is_default: boolean;
   prices: VariantPrice[];
   specifications: VariantSpecification[];
+  packaging?: { type: string; quantity: string; unit: string; description: string | null }[];
 }
 
 export interface CatalogDocument {
@@ -127,9 +141,9 @@ export interface ProductDetailResponse {
 
 export interface ProductListResponse {
   products: CatalogProduct[];
-  total: number;
+  total: number | null;
   page: number;
   pageSize: number;
-  totalPages: number;
+  totalPages: number | null;
+  hasMore: boolean;
 }
-

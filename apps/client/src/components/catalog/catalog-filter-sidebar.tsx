@@ -4,16 +4,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { catalogApi } from '@/lib/api';
 import type { CatalogCategory, CatalogBrand } from '@/lib/types';
-import {
-  Layers,
-  Building2,
-  Sparkles,
-  Clock,
-  RotateCcw,
-  Check,
-  ChevronRight,
-  Filter,
-} from 'lucide-react';
+import { Layers, Building2, Sparkles, Clock, RotateCcw, Check, Filter } from 'lucide-react';
 
 interface CatalogFilterSidebarProps {
   selectedCategory?: string;
@@ -165,9 +156,7 @@ export function CatalogFilterSidebar({
                   {cat.product_count !== undefined && cat.product_count > 0 ? (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${
-                        isSelected
-                          ? 'bg-blue-200 text-blue-800'
-                          : 'bg-slate-100 text-slate-500'
+                        isSelected ? 'bg-blue-200 text-blue-800' : 'bg-slate-100 text-slate-500'
                       }`}
                     >
                       {cat.product_count}
@@ -233,9 +222,7 @@ export function CatalogFilterSidebar({
                   {brand.product_count !== undefined && brand.product_count > 0 ? (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${
-                        isSelected
-                          ? 'bg-blue-200 text-blue-800'
-                          : 'bg-slate-100 text-slate-500'
+                        isSelected ? 'bg-blue-200 text-blue-800' : 'bg-slate-100 text-slate-500'
                       }`}
                     >
                       {brand.product_count}
@@ -250,4 +237,3 @@ export function CatalogFilterSidebar({
     </aside>
   );
 }
-

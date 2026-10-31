@@ -1,114 +1,72 @@
 'use client';
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ImageVariant } from '@/lib/types';
-import { Package, Sparkles } from 'lucide-react';
-
-interface ProductGalleryProps {
-  primaryUrl: string | null;
-  gallery: ImageVariant[];
-  productName: string;
-  isFeatured?: boolean;
-  isNewArrival?: boolean;
-}
-
+import { CatalogImage } from '@/components/catalog/catalog-image';
+import { Package } from 'lucide-react';
 export function ProductGallery({
   primaryUrl,
   gallery,
   productName,
   isFeatured,
   isNewArrival,
-}: ProductGalleryProps) {
-  // Combine primary and gallery, removing duplicates
-  const allImages = React.useMemo(() => {
-    const urls = new Set<string>();
-    const list: { url: string; kind: string }[] = [];
-
-    if (primaryUrl) {
-      urls.add(primaryUrl);
-      list.push({ url: primaryUrl, kind: 'detail' });
-    }
-
-    for (const item of gallery) {
-      if (item.url && !urls.has(item.url)) {
-        urls.add(item.url);
-        list.push({ url: item.url, kind: item.kind });
-      }
-    }
-
-    return list;
-  }, [primaryUrl, gallery]);
-
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [imageError, setImageError] = useState(false);
-
-  const currentImage = allImages[selectedIndex]?.url || primaryUrl;
-
+}: {
+  primaryUrl: string | null;
+  gallery: ImageVariant[];
+  productName: string;
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+}) {
+  const images = [
+    ...new Set(
+      [primaryUrl, ...gallery.map((image) => image.url)].filter((url): url is string => !!url),
+    ),
+  ];
+  const [index, setIndex] = useState(0);
+  const current = images[index] || images[0];
   return (
-    <div className="space-y-3.5">
-      {/* Main Display Image */}
-      <div className="relative aspect-4/3 sm:aspect-square bg-slate-100 rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-        {currentImage && !imageError ? (
-          <img
-            src={currentImage}
+    <div className="space-y-3">
+      <div className="aspect-square bg-slate-100 rounded-2xl border overflow-hidden relative">
+        {current ? (
+          <CatalogImage
+            key={current}
+            src={current}
             alt={productName}
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover transition-all duration-300"
+            width={2000}
+            height={2000}
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority={index === 0}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400 p-6 text-center">
-            <Package className="w-16 h-16 stroke-[1.25] text-slate-400" />
-            <span className="text-xs font-semibold text-slate-500 mt-3">
-              Official Material Image Preview
-            </span>
-          </div>
+          <Package className="absolute inset-0 m-auto w-16 h-16 text-slate-400" />
         )}
-
-        {/* Status Badges Overlay */}
-        <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5 z-10">
-          {isFeatured && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-xs">
-              <Sparkles className="w-3.5 h-3.5" /> Featured Sourcing
-            </span>
-          )}
-          {isNewArrival && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-xs">
-              New Arrival
-            </span>
-          )}
-        </div>
+        {(isFeatured || isNewArrival) && (
+          <span className="absolute top-3 left-3 bg-blue-700 text-white px-3 py-1 rounded-full text-xs">
+            {isFeatured ? 'Featured' : 'New arrival'}
+          </span>
+        )}
       </div>
-
-      {/* Thumbnail Strip (if multiple images available) */}
-      {allImages.length > 1 && (
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5">
-          {allImages.map((img, idx) => {
-            const isSelected = idx === selectedIndex;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => {
-                  setSelectedIndex(idx);
-                  setImageError(false);
-                }}
-                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition shrink-0 ${
-                  isSelected
-                    ? 'border-blue-600 ring-2 ring-blue-600/30 shadow-xs'
-                    : 'border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
-                }`}
-              >
-                <img
-                  src={img.url}
-                  alt={`${productName} thumbnail ${idx + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            );
-          })}
+      {images.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto">
+          {images.map((url, position) => (
+            <button
+              type="button"
+              key={url}
+              aria-label={`View image ${position + 1}`}
+              aria-pressed={index === position}
+              onClick={() => setIndex(position)}
+              className="w-20 h-20 shrink-0 rounded-lg border overflow-hidden"
+            >
+              <CatalogImage
+                src={url}
+                alt={`${productName} thumbnail ${position + 1}`}
+                width={80}
+                height={80}
+                sizes="80px"
+              />
+            </button>
+          ))}
         </div>
       )}
     </div>
   );
 }
-

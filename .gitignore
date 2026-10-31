@@ -1,5 +1,7 @@
 node_modules/
+.cache/
 .next/
+**/.next-security/
 **/.next-e2e/
 .deno-cache/
 .turbo/
@@ -13,6 +15,7 @@ playwright-report/
 test-results/
 coverage/
 .local-db/
+.local-db-remediation/
 .local-r2/
 .local-db.log
 .local-db-error.log

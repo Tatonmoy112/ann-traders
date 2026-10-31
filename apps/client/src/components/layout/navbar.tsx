@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { CategoryNav } from './category-nav';
 import { HeaderSearch } from './header-search';
 import { MobileNav } from './mobile-nav';
-import { useRfq } from '@/components/rfq/rfq-context';
-import { FileSpreadsheet, Sparkles, Box } from 'lucide-react';
+import { useContactInquiry } from '@/lib/use-contact-inquiry';
+import { FileSpreadsheet, Box } from 'lucide-react';
 
 export function Navbar() {
-  const { openRfq } = useRfq();
+  const { openInquiry } = useContactInquiry();
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
@@ -68,15 +68,15 @@ export function Navbar() {
               </Link>
             </nav>
 
-            {/* Request B2B Quote Button */}
+            {/* Contact us Button */}
             <button
               type="button"
-              onClick={() => openRfq()}
+              onClick={() => openInquiry()}
               className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] rounded-xl shadow-xs transition"
             >
               <FileSpreadsheet className="w-4 h-4" />
-              <span className="hidden sm:inline">Request B2B Quote</span>
-              <span className="sm:hidden">RFQ</span>
+              <span className="hidden sm:inline">Contact us</span>
+              <span className="sm:hidden">Contact</span>
             </button>
           </div>
         </div>
@@ -89,4 +89,3 @@ export function Navbar() {
     </header>
   );
 }
-

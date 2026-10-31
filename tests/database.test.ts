@@ -128,16 +128,16 @@ suite.sequential('PostgreSQL constraints, transactions, grants and RLS', () => {
   it('creates every original entity', async () => {
     await owner();
     const r = await db.query(
-      "select count(*)::int as count from pg_tables where schemaname='public'",
+      "select count(*)::int as count from pg_tables where schemaname='public' and tablename<>'inquiries'",
     );
     expect(r.rows[0].count).toBe(28);
   });
-  it('enables RLS on all 28 tables', async () => {
+  it('enables RLS on every public table including legacy inquiries', async () => {
     await owner();
     const r = await db.query(
-      "select count(*)::int as count from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity",
+      "select count(*)::int as count from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity",
     );
-    expect(r.rows[0].count).toBe(28);
+    expect(r.rows[0].count).toBe(0);
   });
   it('lets editors create and atomically save drafts', async () => {
     const r = await db.query('select public.save_product_draft($1::jsonb) as revision', [
@@ -460,6 +460,177 @@ suite.sequential('PostgreSQL constraints, transactions, grants and RLS', () => {
       "select has_function_privilege('authenticated','public.claim_catalog_jobs(integer)','EXECUTE') as claim,has_function_privilege('authenticated','public.manage_admin(uuid,uuid,text,text,boolean)','EXECUTE') as manage",
     );
     expect(r.rows[0]).toEqual({ claim: false, manage: false });
+  });
+  async function publishedPublicFixture(extraPrices = '') {
+    await db.query('select public.save_product_draft($1::jsonb)', [JSON.stringify(payload())]);
+    await owner();
+    await db.query(
+      "insert into public.variant_prices(variant_id,currency_code,price_type,min_price,price_unit_id,valid_from) values($1,'BDT','fixed',100,$2,now())",
+      [variant, unit],
+    );
+    if (extraPrices) await db.query(extraPrices, [variant, unit]);
+    await db.query(
+      "insert into public.product_media(product_id,media_type,provider_asset_id,delivery_url,upload_status,is_primary) values($1,'image','public-fixture','https://imagedelivery.net/test/public-fixture/detail','ready',true)",
+      [product],
+    );
+    await role(admin);
+    await db.query("select public.product_lifecycle($1,2,'publish')", [product]);
+    await role(editor, 'aal1', 'anon');
+  }
+  it('keeps all public views read-only and denies anonymous raw dictionary and inquiry access', async () => {
+    await owner();
+    const views = await db.query(
+      "select table_name from information_schema.views where table_schema='public_catalog'",
+    );
+    for (const view of views.rows) {
+      const result = await db.query(
+        "select has_table_privilege('anon',$1,'INSERT,UPDATE,DELETE') as allowed",
+        ['public_catalog.' + view.table_name],
+      );
+      expect(result.rows[0].allowed).toBe(false);
+    }
+    for (const name of [
+      'products',
+      'categories',
+      'brands',
+      'inquiries',
+      'admin_profiles',
+      'audit_logs',
+      'product_media',
+      'product_documents',
+      'variant_prices',
+    ]) {
+      const result = await db.query(
+        "select has_table_privilege('anon',$1,'SELECT,INSERT,UPDATE,DELETE') as allowed",
+        ['public.' + name],
+      );
+      expect(result.rows[0].allowed).toBe(false);
+    }
+    const policy = await db.query(
+      "select roles::text[] as roles from pg_policies where tablename='inquiries' and policyname='inquiries_service_all'",
+    );
+    expect(policy.rows[0].roles).toEqual(['service_role']);
+  });
+  it('excludes drafts from cards, details and visibility checks', async () => {
+    await role(editor, 'aal1', 'anon');
+    expect(
+      (await db.query('select id from public_catalog.product_cards where id=$1', [product]))
+        .rowCount,
+    ).toBe(0);
+    expect(
+      (
+        await db.query('select slug from public_catalog.product_details where slug=$1', [
+          'test-marker-paper',
+        ])
+      ).rowCount,
+    ).toBe(0);
+    expect(
+      (await db.query('select id from public_catalog.visibility where id=$1', [product])).rowCount,
+    ).toBe(0);
+  });
+  it('delivers compact, unit-correct cards and one public detail projection', async () => {
+    await publishedPublicFixture();
+    const row = (
+      await db.query('select * from public_catalog.product_cards where id=$1', [product])
+    ).rows[0];
+    expect(row.display_price).toMatchObject({
+      type: 'fixed',
+      min: '100.0000',
+      max: '100.0000',
+      currency: 'BDT',
+      unit: 'kg',
+    });
+    expect(row).not.toHaveProperty('description');
+    expect(row).not.toHaveProperty('image_variants');
+    expect(row).not.toHaveProperty('object_manifest');
+    const detail = (
+      await db.query('select * from public_catalog.product_details where slug=$1', [
+        'test-marker-paper',
+      ])
+    ).rows[0];
+    expect(detail.variants[0].prices[0]).toMatchObject({
+      currency: 'BDT',
+      min: '100.0000',
+      unit: 'kg',
+    });
+    expect(detail.gallery).toHaveLength(1);
+    expect(JSON.stringify(detail)).not.toMatch(/storage_path|staging_key|uploaded_by|created_by/);
+  });
+  it('excludes future and expired prices from both cards and details', async () => {
+    await publishedPublicFixture(
+      "insert into public.variant_prices(variant_id,currency_code,price_type,min_price,price_unit_id,valid_from,valid_until) values($1,'BDT','fixed',1,$2,now()-interval '2 days',now()-interval '1 day'),($1,'USD','fixed',2,$2,now()+interval '1 day',null)",
+    );
+    const row = (
+      await db.query('select display_price from public_catalog.product_cards where id=$1', [
+        product,
+      ])
+    ).rows[0];
+    expect(row.display_price.min).toBe('100.0000');
+    const detail = (
+      await db.query('select variants from public_catalog.product_details where slug=$1', [
+        'test-marker-paper',
+      ])
+    ).rows[0];
+    expect(detail.variants[0].prices).toHaveLength(1);
+  });
+  it('does not combine incompatible currencies into a numeric public range', async () => {
+    await publishedPublicFixture(
+      "insert into public.variant_prices(variant_id,currency_code,price_type,min_price,price_unit_id,valid_from) values($1,'USD','fixed',2,$2,now())",
+    );
+    const row = (
+      await db.query('select display_price from public_catalog.product_cards where id=$1', [
+        product,
+      ])
+    ).rows[0];
+    expect(row.display_price).toEqual({ type: 'on_request' });
+  });
+  it('removes withdrawn products from all reads and the uncached visibility gate', async () => {
+    await publishedPublicFixture();
+    await role(admin);
+    await db.query("select public.product_lifecycle($1,3,'archive')", [product]);
+    await role(editor, 'aal1', 'anon');
+    for (const view of ['visibility', 'product_cards', 'products'])
+      expect(
+        (await db.query(`select id from public_catalog.${view} where id=$1`, [product])).rowCount,
+      ).toBe(0);
+    expect(
+      (
+        await db.query('select slug from public_catalog.product_details where slug=$1', [
+          'test-marker-paper',
+        ])
+      ).rowCount,
+    ).toBe(0);
+  });
+  it('unknown exact category/brand slugs yield zero published cards', async () => {
+    await publishedPublicFixture();
+    expect(
+      (
+        await db.query(
+          "select id from public_catalog.product_cards where category_slug='does-not-exist'",
+        )
+      ).rowCount,
+    ).toBe(0);
+    expect(
+      (
+        await db.query(
+          "select id from public_catalog.product_cards where brand_slug='does-not-exist'",
+        )
+      ).rowCount,
+    ).toBe(0);
+  });
+  it('bounds anonymous listing RPCs and allowlists sort identifiers', async () => {
+    await publishedPublicFixture();
+    const result = await db.query(
+      "select id from public_catalog.list_product_cards('','','',false,false,null,100000,'name; drop table products',true)",
+    );
+    expect(result.rows.map((row) => row.id)).toEqual([product]);
+    expect(
+      (await db.query("select id from public_catalog.list_product_cards('unknown')")).rowCount,
+    ).toBe(0);
+    const result2 = await db.query(
+      "select id from public_catalog.list_product_cards('','','',false,false,2,1)",
+    );
+    expect(result2.rowCount).toBe(0);
   });
   it('keeps R2 control RPCs server-only and disables legacy attachment capabilities', async () => {
     const r = await db.query(

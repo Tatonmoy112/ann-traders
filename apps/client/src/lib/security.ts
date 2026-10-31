@@ -1,110 +1,130 @@
-import 'server-only';
+import { createHash, timingSafeEqual } from 'node:crypto';
+import { isIP } from 'node:net';
 
-/**
- * Production Security Utilities for @ann/client
- * Provides in-memory rate limiting, IP resolution, input sanitization, and error masking.
- */
+type SecurityEnv = Record<string, string | undefined>;
+export const READ_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+const MAX_IDENTITIES = 5000;
+const trustedProxyMode = (env: SecurityEnv) =>
+  env.CLIENT_TRUSTED_PROXY && env.CLIENT_TRUSTED_PROXY !== 'auto'
+    ? env.CLIENT_TRUSTED_PROXY
+    : env.VERCEL === '1'
+      ? 'vercel'
+      : 'none';
 
-interface RateLimitRecord {
-  count: number;
-  resetAt: number;
+export function equalSecret(supplied: string, expected: string) {
+  if (supplied.length > 512 || !expected || expected.length > 512) return false;
+  return timingSafeEqual(
+    createHash('sha256').update(supplied).digest(),
+    createHash('sha256').update(expected).digest(),
+  );
+}
+export function purgeAuthorized(headers: Headers, secret: string | undefined) {
+  return (
+    !!secret &&
+    secret.length >= 32 &&
+    secret.length <= 256 &&
+    equalSecret(headers.get('authorization') || '', `Bearer ${secret}`)
+  );
+}
+export function proxyOriginAllowed(headers: Headers, env: SecurityEnv = process.env) {
+  const mode = trustedProxyMode(env);
+  if (!['none', 'vercel', 'cloudflare', 'nginx'].includes(mode)) return false;
+  if (mode === 'vercel') return env.VERCEL === '1';
+  if (mode === 'none') return true;
+  const secret = env.CLIENT_PROXY_ORIGIN_SECRET;
+  return (
+    !!secret &&
+    secret.length >= 32 &&
+    equalSecret(headers.get('x-catalog-origin-key') || '', secret)
+  );
+}
+export function trustedClientIdentity(
+  headers: Headers,
+  env: SecurityEnv = process.env,
+): string | null {
+  if (!proxyOriginAllowed(headers, env)) return null;
+  const mode = trustedProxyMode(env);
+  const header =
+    mode === 'vercel'
+      ? 'x-vercel-forwarded-for'
+      : mode === 'cloudflare'
+        ? 'cf-connecting-ip'
+        : mode === 'nginx'
+          ? 'x-real-ip'
+          : null;
+  if (!header) return null;
+  const raw = headers.get(header)?.trim();
+  if (!raw || raw.length > 64 || !isIP(raw)) return null;
+  const normalized = isIP(raw) === 6 ? new URL(`http://[${raw}]`).hostname : raw;
+  return createHash('sha256').update(normalized).digest('hex');
 }
 
-// In-memory sliding window store for rate limiting
-const rateLimitMap = new Map<string, RateLimitRecord>();
-
-// Clean up stale entries every 5 minutes to prevent memory leaks
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, record] of rateLimitMap.entries()) {
-      if (now > record.resetAt) {
-        rateLimitMap.delete(key);
-      }
+// Best-effort burst protection for ONE running process. Hosting/WAF enforcement
+// is required across replicas, regions, restarts and direct Supabase requests.
+export class BurstLimiter {
+  private readonly entries = new Map<string, { count: number; expires: number }>();
+  constructor(private readonly capacity = MAX_IDENTITIES) {}
+  get size() {
+    return this.entries.size;
+  }
+  consume(key: string, limit: number, windowMs: number, now = Date.now()) {
+    let record = this.entries.get(key);
+    if (record && record.expires <= now) {
+      this.entries.delete(key);
+      record = undefined;
     }
-  }, 5 * 60 * 1000);
-}
-
-/**
- * Checks if a client exceeds the allowed request limit within a time window.
- * @param key Unique identifier (e.g. `inquiry:${ip}`)
- * @param maxRequests Maximum allowed requests in window
- * @param windowMs Window duration in milliseconds (e.g. 10 * 60 * 1000 for 10 minutes)
- */
-export function checkRateLimit(
-  key: string,
-  maxRequests = 5,
-  windowMs = 10 * 60 * 1000,
-): { allowed: boolean; remaining: number; resetInMs: number } {
-  const now = Date.now();
-  const existing = rateLimitMap.get(key);
-
-  if (!existing || now > existing.resetAt) {
-    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: maxRequests - 1, resetInMs: windowMs };
+    if (!record) {
+      if (this.entries.size >= this.capacity) {
+        for (const [entryKey, value] of this.entries)
+          if (value.expires <= now) this.entries.delete(entryKey);
+      }
+      if (this.entries.size >= this.capacity)
+        return { allowed: false, remaining: 0, retryAfter: Math.ceil(windowMs / 1000) };
+      record = { count: 0, expires: now + windowMs };
+      this.entries.set(key, record);
+    }
+    const retryAfter = Math.max(1, Math.ceil((record.expires - now) / 1000));
+    if (record.count >= limit) return { allowed: false, remaining: 0, retryAfter };
+    record.count++;
+    return { allowed: true, remaining: limit - record.count, retryAfter };
   }
-
-  if (existing.count >= maxRequests) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetInMs: Math.max(0, existing.resetAt - now),
-    };
+}
+export function requestBudget(path: string, authenticatedPurge: boolean) {
+  if (path === '/api/catalog/revalidate' && authenticatedPurge)
+    return { key: 'purge', global: 30, individual: 10 };
+  if (path === '/_next/image') return { key: 'images', global: 2400, individual: 240 };
+  return { key: 'read', global: 1200, individual: 120 };
+}
+export function invalidApiQuery(path: string, params: URLSearchParams) {
+  let allowed: string[];
+  if (path === '/api/catalog/products')
+    allowed = ['category', 'brand', 'q', 'featured', 'new', 'page', 'pageSize', 'sort', 'asc'];
+  else if (path === '/api/catalog/documents') allowed = ['type', 'q', 'page', 'pageSize'];
+  else if (path === '/api/catalog/categories') allowed = ['tree'];
+  else if (path.startsWith('/api/catalog/')) allowed = [];
+  else return false;
+  const seen = new Set<string>();
+  for (const [key, value] of params) {
+    if (!allowed.includes(key) || seen.has(key)) return true;
+    seen.add(key);
+    const max = key === 'q' ? 80 : ['category', 'brand'].includes(key) ? 180 : 40;
+    if (value.length > max || /[\u0000-\u001f\u007f]/.test(value)) return true;
+    if (['category', 'brand'].includes(key) && value && !/^[a-z0-9_-]+$/i.test(value)) return true;
+    if (['featured', 'new', 'asc', 'tree'].includes(key) && !['true', 'false', ''].includes(value))
+      return true;
+    if (
+      key === 'sort' &&
+      ![
+        'name',
+        'updated_at',
+        'published_at',
+        'name_asc',
+        'name_desc',
+        'updated_at_desc',
+        'published_at_desc',
+      ].includes(value)
+    )
+      return true;
   }
-
-  existing.count += 1;
-  return {
-    allowed: true,
-    remaining: maxRequests - existing.count,
-    resetInMs: Math.max(0, existing.resetAt - now),
-  };
+  return false;
 }
-
-/**
- * Extracts client IP address safely from request headers.
- */
-export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    const first = forwarded.split(',')[0].trim();
-    if (first) return first;
-  }
-  const realIp = request.headers.get('x-real-ip');
-  if (realIp) return realIp.trim();
-
-  const cfIp = request.headers.get('cf-connecting-ip');
-  if (cfIp) return cfIp.trim();
-
-  return '127.0.0.1';
-}
-
-/**
- * Strips dangerous HTML tags, null bytes, and control characters to prevent Stored XSS.
- */
-export function sanitizeText(input: string): string {
-  if (!input) return '';
-  return input
-    .replace(/\0/g, '') // remove null bytes
-    .replace(/[<>]/g, '') // strip HTML opening/closing brackets
-    .trim();
-}
-
-/**
- * Masks internal database / infrastructure errors in production.
- * Logs full diagnostic error on the server while returning a safe message to clients.
- */
-export function safeErrorMessage(
-  err: unknown,
-  fallback = 'An unexpected error occurred. Please try again later.',
-): string {
-  console.error('[API_ERROR_SERVER_LOG]:', err);
-
-  // In development mode, allow detailed error message for easier debugging
-  if (process.env.NODE_ENV === 'development') {
-    return (err as Error)?.message || fallback;
-  }
-
-  // In production, mask internal database / network errors
-  return fallback;
-}
-

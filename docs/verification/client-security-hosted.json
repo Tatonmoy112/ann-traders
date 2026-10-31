@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-31T09:46:46.886Z",
+  "scope": "Anonymous zero-row GET probes only; no hosted writes or private record retrieval. A 404 proves API non-exposure, not database grant correctness.",
+  "checks": [
+    {
+      "schema": "public",
+      "object": "products",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "product_variants",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "variant_prices",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "product_media",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "product_documents",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "categories",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "brands",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "inquiries",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "admin_profiles",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public",
+      "object": "audit_logs",
+      "status": 401,
+      "code": "42501",
+      "expectedAccess": "denied",
+      "passed": true
+    },
+    {
+      "schema": "public_catalog",
+      "object": "categories",
+      "status": 200,
+      "code": null,
+      "expectedAccess": "readable",
+      "passed": true
+    },
+    {
+      "schema": "public_catalog",
+      "object": "brands",
+      "status": 200,
+      "code": null,
+      "expectedAccess": "readable",
+      "passed": true
+    },
+    {
+      "schema": "public_catalog",
+      "object": "visibility",
+      "status": 200,
+      "code": null,
+      "expectedAccess": "readable",
+      "passed": true
+    },
+    {
+      "schema": "public_catalog",
+      "object": "product_cards",
+      "status": 200,
+      "code": null,
+      "expectedAccess": "readable",
+      "passed": true
+    },
+    {
+      "schema": "public_catalog",
+      "object": "product_details",
+      "status": 200,
+      "code": null,
+      "expectedAccess": "readable",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-31T10:09:34.754Z",
+  "automatedTests": {
+    "passed": 143,
+    "files": 11,
+    "postgresTests": 57
+  },
+  "productionSecurityChecks": 30,
+  "productionCatalogChecks": 21,
+  "hostedAnonymousChecks": {
+    "passed": 15,
+    "total": 15,
+    "remoteWrites": false
+  },
+  "productionDependencyVulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "client": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "format": "pass",
+    "isolatedProductionBuild": "pass"
+  },
+  "currentSourceCredentialScan": [],
+  "remainingOperatorActions": [
+    "Rotate previously hardcoded hosted database password; historical copies were not revoked",
+    "Activate and verify Vercel Firewall rate-limit rule",
+    "Verify production HTTPS/R2 custom-domain settings"
+  ],
+  "hostingSettingsChanged": false
+}

@@ -1,29 +1,26 @@
+import { connection } from 'next/server';
+import { getCategories, getProducts } from '@/lib/catalog';
+import { parseCatalogFilters } from '@/lib/catalog-contract';
 import { HeroBanner } from '@/components/home/hero-banner';
 import { CategoryShowcase } from '@/components/home/category-showcase';
 import { FeaturedProducts } from '@/components/home/featured-products';
-import { ValueProps } from '@/components/home/value-props';
 import { NewArrivals } from '@/components/home/new-arrivals';
+import { ValueProps } from '@/components/home/value-props';
 import { CtaBanner } from '@/components/home/cta-banner';
-
-export default function Home() {
+export default async function Home() {
+  await connection();
+  const [categories, featured, arrivals] = await Promise.all([
+    getCategories(),
+    getProducts(parseCatalogFilters(new URLSearchParams('featured=true&pageSize=3'))),
+    getProducts(parseCatalogFilters(new URLSearchParams('new=true&pageSize=3'))),
+  ]);
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* 1. Hero Showcase with live sourcing metrics */}
+    <div>
       <HeroBanner />
-
-      {/* 2. Sourcing Divisions (Categories) */}
-      <CategoryShowcase />
-
-      {/* 3. Featured Factory Materials & High-Demand Stock */}
-      <FeaturedProducts />
-
-      {/* 4. Industrial Value Propositions */}
+      <CategoryShowcase categories={categories} />
+      <FeaturedProducts products={featured.products} />
       <ValueProps />
-
-      {/* 5. New Spot Arrivals */}
-      <NewArrivals />
-
-      {/* 6. Commercial Indenting CTA Banner */}
+      <NewArrivals products={arrivals.products} />
       <CtaBanner />
     </div>
   );

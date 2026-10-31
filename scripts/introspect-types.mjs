@@ -65,11 +65,18 @@ for (const schema of ['public', 'public_catalog']) {
   for (const view of objects.filter((t) => t.relkind === 'v')) output += await render(view);
   output += '}; Functions: {\n';
   const { rows: funcs } = await db.query(
-    "select p.proname,p.proargnames,p.pronargdefaults,format_type(p.prorettype,null) as returns,array(select format_type(t,null) from unnest(p.proargtypes) t) as args from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname=$1 and p.prokind='f' order by proname",
+    "select p.proname,p.proargnames,p.pronargdefaults,p.proretset,format_type(p.prorettype,null) as returns,array(select format_type(t,null) from unnest(p.proargtypes) t) as args from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname=$1 and p.prokind='f' order by proname",
     [schema],
   );
-  for (const f of funcs)
-    output += `${JSON.stringify(f.proname)}: {Args:{${f.args.map((arg, i) => `${JSON.stringify(f.proargnames?.[i] ?? `arg${i}`)}${i >= f.args.length - f.pronargdefaults ? '?' : ''}:${type(arg)}`).join(';')}};Returns:${type(f.returns)}};\n`;
+  for (const f of funcs) {
+    const object = objects.find(
+      (item) => f.returns === `${schema}.${item.relname}` || f.returns === item.relname,
+    );
+    const returns = object
+      ? `Database[${JSON.stringify(schema)}][${JSON.stringify(object.relkind === 'v' ? 'Views' : 'Tables')}][${JSON.stringify(object.relname)}]["Row"]`
+      : type(f.returns);
+    output += `${JSON.stringify(f.proname)}: {Args:{${f.args.map((arg, i) => `${JSON.stringify(f.proargnames?.[i] ?? `arg${i}`)}${i >= f.args.length - f.pronargdefaults ? '?' : ''}:${type(arg)}`).join(';')}};Returns:${returns}${f.proretset ? '[]' : ''}};\n`;
+  }
   output += '}; Enums: {[_ in never]:never}; CompositeTypes: {[_ in never]:never};};\n';
 }
 output += '};\n';

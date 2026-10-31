@@ -1,6 +1,6 @@
 # System overview
 
-Phase 1 is an independent Next.js admin application with Supabase PostgreSQL/Auth, Cloudflare R2 images and private Supabase document storage. Existing Cloudflare Images URLs are retained during migration. `apps/catalog` is contract-only. Reference applications are never runtime dependencies. Current storage trust boundaries are documented in [R2 lifecycle](r2-image-lifecycle.md).
+The independent `apps/admin` and `apps/client` Next.js deployments share Supabase PostgreSQL. Admin uses Supabase Auth, Cloudflare R2 image processing and private Supabase document storage. Client renders published catalog data on the server with a publishable key, compact listing RPC and separate detail projection. It cannot persist inquiries or sign private document downloads. Existing Cloudflare Images URLs are retained. Current storage trust boundaries are documented in [R2 lifecycle](r2-image-lifecycle.md); public caching follows the [cache contract](cache-and-invalidation.md).
 
 ```mermaid
 flowchart LR
@@ -16,8 +16,8 @@ flowchart LR
   Verify --> CDN[Public R2 custom-domain CDN]
   Admin --> Storage[Private document bucket]
   Outbox --> Worker[Authenticated Edge consumer]
-  Worker --> Future[Future catalog invalidation receiver]
-  Public[Future anonymous catalog] --> Projection[public_catalog safe views]
+  Worker -. production acceptance pending .-> Future[Signed catalog event receiver]
+  Public[Anonymous Next.js client] --> Projection[public_catalog safe views and bounded read RPC]
   Projection --> DB
 ```
 

@@ -47,9 +47,7 @@ export function CatalogToolbar({
           </button>
 
           <div className="text-xs sm:text-sm font-semibold text-slate-700">
-            <span>
-              {total === 1 ? '1 Material Found' : `${total} Materials Found`}
-            </span>
+            <span>{total === 1 ? '1 Material Found' : `${total} Materials Found`}</span>
           </div>
         </div>
 
@@ -128,4 +126,3 @@ export function CatalogToolbar({
     </div>
   );
 }
-

@@ -4,36 +4,26 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { catalogApi } from '@/lib/api';
-import { useRfq } from '@/components/rfq/rfq-context';
+import { useContactInquiry } from '@/lib/use-contact-inquiry';
 import { HeaderSearch } from './header-search';
-import {
-  Menu,
-  X,
-  Layers,
-  Phone,
-  Mail,
-  FileSpreadsheet,
-  Building2,
-  ChevronRight,
-  ShieldCheck,
-  Package,
-} from 'lucide-react';
+import { Menu, X, Layers, FileSpreadsheet, ChevronRight, Package } from 'lucide-react';
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
-  const { openRfq } = useRfq();
+  const { openInquiry } = useContactInquiry();
 
   const { data: categories = [] } = useQuery({
     queryKey: ['catalog', 'categories'],
     queryFn: () => catalogApi.getCategories(),
-    staleTime: 5 * 60 * 1000,
+    enabled: isOpen,
+    staleTime: 30 * 1000,
   });
 
   const closeMenu = () => setIsOpen(false);
 
-  const handleOpenRfq = () => {
+  const handleOpenInquiry = () => {
     closeMenu();
-    openRfq();
+    openInquiry();
   };
 
   return (
@@ -87,11 +77,11 @@ export function MobileNav() {
             <div className="p-4 border-b border-slate-100">
               <button
                 type="button"
-                onClick={handleOpenRfq}
+                onClick={handleOpenInquiry}
                 className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition shadow-xs flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                Request Commercial Quote
+                Contact us
               </button>
             </div>
 
@@ -135,27 +125,16 @@ export function MobileNav() {
               </div>
             </div>
 
-            {/* Contact & Certifications Footer in Drawer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3">
-              <div className="flex items-center gap-2 text-xs text-slate-600">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>OEKO-TEX® & ISO 9001:2015 Approved</span>
-              </div>
-              <div className="space-y-1.5 text-xs text-slate-600">
-                <a href="tel:+8801711000000" className="flex items-center gap-2 hover:text-blue-600">
-                  <Phone className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>+880 1711-000000</span>
-                </a>
-                <a href="mailto:commercial@anntraders.com" className="flex items-center gap-2 hover:text-blue-600">
-                  <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>commercial@anntraders.com</span>
-                </a>
-              </div>
-            </div>
+            <Link
+              href="/contact"
+              onClick={() => setIsOpen(false)}
+              className="block p-4 text-sm text-blue-700"
+            >
+              Contact ANN Traders
+            </Link>
           </div>
         </div>
       )}
     </div>
   );
 }
-

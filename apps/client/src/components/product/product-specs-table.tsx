@@ -1,6 +1,6 @@
 import React from 'react';
 import type { CatalogVariant, CatalogProduct } from '@/lib/types';
-import { Sliders, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Sliders, CheckCircle2 } from 'lucide-react';
 
 interface ProductSpecsTableProps {
   product: CatalogProduct;
@@ -37,7 +37,9 @@ export function ProductSpecsTable({ product, variant }: ProductSpecsTableProps) 
 
             {variant?.manufacturer_part_number && (
               <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-500">Manufacturer Part No (MPN)</td>
+                <td className="py-2.5 px-4 font-semibold text-slate-500">
+                  Manufacturer Part No (MPN)
+                </td>
                 <td className="py-2.5 px-4 font-mono text-slate-800">
                   {variant.manufacturer_part_number}
                 </td>
@@ -93,9 +95,7 @@ export function ProductSpecsTable({ product, variant }: ProductSpecsTableProps) 
                       Delivery / Indent Lead Time
                     </td>
                     <td className="py-2.5 px-4 text-slate-800">
-                      {variant.lead_time_days === 0
-                        ? 'Ready Spot Stock (Same-Day / 24h Delivery)'
-                        : `${variant.lead_time_days} Days (Factory Door Delivery)`}
+                      {variant.lead_time_days} days (confirm current delivery terms)
                     </td>
                   </tr>
                 )}
@@ -133,4 +133,3 @@ export function ProductSpecsTable({ product, variant }: ProductSpecsTableProps) 
     </div>
   );
 }
-

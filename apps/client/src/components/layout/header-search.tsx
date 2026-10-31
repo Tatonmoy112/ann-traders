@@ -61,4 +61,3 @@ export function HeaderSearch({ className = '', onSearchSubmit }: HeaderSearchPro
     </form>
   );
 }
-
