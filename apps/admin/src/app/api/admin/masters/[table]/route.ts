@@ -25,18 +25,59 @@ export async function GET(request: Request, { params }: Context) {
     const { table } = await params;
     const t = getTable(table),
       q = new URL(request.url).searchParams;
-    const page = Math.max(1, Math.min(10000, Number(q.get('page') ?? 1) || 1)),
+    const page = Math.max(1, Math.min(10000, Math.floor(Number(q.get('page') ?? 1) || 1))),
       limit = q.get('lookup') === 'true' ? 500 : 20;
     let query = db.from(t).select('*', { count: 'exact' });
+    const search = (q.get('q') || '')
+      .slice(0, 100)
+      .replace(/[^\p{L}\p{M}\p{N}\s-]/gu, ' ')
+      .trim();
+    if (search) {
+      const fields = masters[t].fields.filter((f) =>
+        [
+          'name',
+          'code',
+          'symbol',
+          'slug',
+          'value',
+          'label',
+          'model_name',
+          'equipment_type',
+        ].includes(f.key),
+      );
+      if (fields.length)
+        query = query.or(fields.map((f) => `${f.key}.ilike.%${search}%`).join(','));
+    }
     if (t === 'category_attributes' && q.get('category')) {
       const category = z.uuid().parse(q.get('category'));
+      if (q.get('effective') === 'true') {
+        const { data, error } = await db.rpc('get_category_attribute_rules', { category });
+        if (error) databaseError(error);
+        return json({ rows: data, total: Array.isArray(data) ? data.length : 0 });
+      }
       query = query.match({ category_id: category });
     }
     const { data, error, count } = await query
       .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
     if (error) databaseError(error);
-    return json({ rows: data, total: count });
+    const selected = q.get('selected');
+    const rows = [...(data || [])];
+    if (
+      t !== 'category_attributes' &&
+      selected &&
+      !rows.some((row) => 'id' in row && row.id === selected)
+    ) {
+      z.uuid().parse(selected);
+      const { data: current, error: selectedError } = await db
+        .from(t)
+        .select('*')
+        .eq('id', selected)
+        .maybeSingle();
+      if (selectedError) databaseError(selectedError);
+      if (current) rows.push(current);
+    }
+    return json({ rows, total: count });
   } catch (e) {
     return failure(e);
   }

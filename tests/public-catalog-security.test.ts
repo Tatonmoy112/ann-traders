@@ -45,6 +45,24 @@ describe('anonymous public Supabase boundary', () => {
     expect(result.error?.message).toContain('read-only');
     expect(mock).not.toHaveBeenCalled();
   });
+  it('transmits JSONB discovery arguments as JSON text in anonymous GET requests', async () => {
+    const mock = vi.fn(
+      async () =>
+        new Response('{"rows":[],"next_cursor":null}', {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    vi.stubGlobal('fetch', mock);
+    const filters = [{ attribute: '40000000-0000-4000-8000-000000000001', min: '70' }];
+    await serverSupabase().rpc(
+      'browse_product_cards',
+      { attribute_filters: JSON.stringify(filters) },
+      { get: true },
+    );
+    const args = mock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(args[1].method).toBe('GET');
+    expect(JSON.parse(new URL(args[0]).searchParams.get('attribute_filters')!)).toEqual(filters);
+  });
   it('rejects remote cleartext endpoints and embedded credentials', () => {
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://example.supabase.co');
     expect(serverSupabase).toThrow('HTTPS');

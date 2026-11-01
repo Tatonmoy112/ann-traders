@@ -1,5 +1,7 @@
 # Implementation status — 2026-10-24
 
+Superseding 2026-11-01 work and current release gates: [production refinement](production-refinement/final-readiness-report.md). The historical remaining-work list below is not the current acceptance checklist.
+
 ## R2 refactor update
 
 Development delivery is now explicit: HTTPS r2.dev, disabled development CDN purge, canonical keys and local Supabase Auth/REST/Edge verification. The localhost CORS policy is verified, 83 tests and 14 pgTAP checks pass, and all 6 browser regressions pass. See [development verification](verification/r2-development-results.md) and [hosted staging requirements](verification/r2-hosted-staging-requirements.md). Migration 014 changes only a public projection and cleanup reference logic; it adds no product-media columns. No hosted migration or deployment was applied.
@@ -16,26 +18,26 @@ This is a working development implementation and a substantial catalog vertical 
 
 ## Delivered
 
-| Area | State and evidence |
-|---|---|
-| Audit | Source inspection, 28-entity map, schema risks, reference UI patterns, industry sources and ADRs in `docs/` |
-| Workspace | pnpm/Turborepo, Next 16.4.3, strict TypeScript, Tailwind 4, Radix/shadcn-style shared UI, TanStack Query/Table, RHF/Zod; dependencies pinned with lockfile |
-| Responsive UI | Collapsible sidebar/mobile drawer, database dashboard, product table with search/filter/sort/pagination/column visibility, dictionary dialogs, product editor, libraries, audit and administrator screens |
-| Authentication | SSR cookies, proxy refresh, protected operations, active profile revalidation, login/reset/logout, invitation route, TOTP enrollment/challenge; AAL2 required for elevated roles in application and DB |
-| Core schema | All 28 tables in eleven migrations, FKs, folded uniqueness, timestamps, app-immutable audit, RLS/grants, publication checks and safe public views |
-| Transactions | Draft create/save, variant ownership, preserved price history, revision locking, lifecycle/outbox atomic commit, relationship replacement with fixed table/column allowlists |
-| Dictionaries | Category/brand/unit/attribute/options/category mapping/industry/application/certification/fiber/equipment create/update; admin-only writes; referenced masters cannot be hard deleted |
-| Authoring | Basics/SEO, SKUs/MOQ/units/capacity/availability, fixed/range/on-request quotes, effective windows, tiers, packaging, typed category-mapped specs, extra categories, industries/applications, certification metadata, composition and equipment compatibility |
-| Integrity | NUMERIC with text casts before JSON serialization, explicit required amounts, non-overlapping price/time tiers, positive values, GSM quantity rejection, typed attributes/option ownership/cardinality, required composition at publication |
-| Provider code | Cloudflare staged direct upload and provider owner/product/status/URL verification, original MIME/bytes/dimensions checks, primary/alt/detach; private PDF upload/signature checks and expiring authorized download |
-| Public contract | No customer UI; explicit published-safe `public_catalog.products`, `.variants`, `.documents` views; no raw storage paths, drafts, audit or administrator data |
-| Jobs | Durable outbox with leases/retry/dead letters, service-only job RPCs and authenticated Edge consumer source; deliberately outbox-first, not a completed PGMQ/Cron setup |
-| Types | Generated from the applied isolated PostgreSQL schema via `scripts/introspect-types.mjs`; official Supabase CLI generation command also supplied |
-| Verification | 53 passing tests: 34 PostgreSQL/security, 10 domain, 9 provider contracts; 2 passing provider-double browser scenarios; lint, typecheck and production build checked |
-| Migration replay | All eleven migrations replayed into a fresh isolated database, followed by 53 passing tests |
-| Performance | 500/5,000/20,000 products with 2 variants/specs/prices plus 1 image each; warm single-client P95 10.2/23.3/72.6 ms; plans/hardware in `docs/verification/performance.json` |
-| Dependencies | Production audit: 151 dependencies, zero known advisories at every severity; JSON report saved |
-| Operations | README, architecture/security/worker/cache docs, deploy/rollback/backup runbook, Docker files and CI workflows supplied |
+| Area             | State and evidence                                                                                                                                                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Audit            | Source inspection, 28-entity map, schema risks, reference UI patterns, industry sources and ADRs in `docs/`                                                                                                                                                   |
+| Workspace        | pnpm/Turborepo, Next 16.4.3, strict TypeScript, Tailwind 4, Radix/shadcn-style shared UI, TanStack Query/Table, RHF/Zod; dependencies pinned with lockfile                                                                                                    |
+| Responsive UI    | Collapsible sidebar/mobile drawer, database dashboard, product table with search/filter/sort/pagination/column visibility, dictionary dialogs, product editor, libraries, audit and administrator screens                                                     |
+| Authentication   | SSR cookies, proxy refresh, protected operations, active profile revalidation, login/reset/logout, invitation route, TOTP enrollment/challenge; AAL2 required for elevated roles in application and DB                                                        |
+| Core schema      | All 28 tables in eleven migrations, FKs, folded uniqueness, timestamps, app-immutable audit, RLS/grants, publication checks and safe public views                                                                                                             |
+| Transactions     | Draft create/save, variant ownership, preserved price history, revision locking, lifecycle/outbox atomic commit, relationship replacement with fixed table/column allowlists                                                                                  |
+| Dictionaries     | Category/brand/unit/attribute/options/category mapping/industry/application/certification/fiber/equipment create/update; admin-only writes; referenced masters cannot be hard deleted                                                                         |
+| Authoring        | Basics/SEO, SKUs/MOQ/units/capacity/availability, fixed/range/on-request quotes, effective windows, tiers, packaging, typed category-mapped specs, extra categories, industries/applications, certification metadata, composition and equipment compatibility |
+| Integrity        | NUMERIC with text casts before JSON serialization, explicit required amounts, non-overlapping price/time tiers, positive values, GSM quantity rejection, typed attributes/option ownership/cardinality, required composition at publication                   |
+| Provider code    | Cloudflare staged direct upload and provider owner/product/status/URL verification, original MIME/bytes/dimensions checks, primary/alt/detach; private PDF upload/signature checks and expiring authorized download                                           |
+| Public contract  | No customer UI; explicit published-safe `public_catalog.products`, `.variants`, `.documents` views; no raw storage paths, drafts, audit or administrator data                                                                                                 |
+| Jobs             | Durable outbox with leases/retry/dead letters, service-only job RPCs and authenticated Edge consumer source; deliberately outbox-first, not a completed PGMQ/Cron setup                                                                                       |
+| Types            | Generated from the applied isolated PostgreSQL schema via `scripts/introspect-types.mjs`; official Supabase CLI generation command also supplied                                                                                                              |
+| Verification     | 53 passing tests: 34 PostgreSQL/security, 10 domain, 9 provider contracts; 2 passing provider-double browser scenarios; lint, typecheck and production build checked                                                                                          |
+| Migration replay | All eleven migrations replayed into a fresh isolated database, followed by 53 passing tests                                                                                                                                                                   |
+| Performance      | 500/5,000/20,000 products with 2 variants/specs/prices plus 1 image each; warm single-client P95 10.2/23.3/72.6 ms; plans/hardware in `docs/verification/performance.json`                                                                                    |
+| Dependencies     | Production audit: 151 dependencies, zero known advisories at every severity; JSON report saved                                                                                                                                                                |
+| Operations       | README, architecture/security/worker/cache docs, deploy/rollback/backup runbook, Docker files and CI workflows supplied                                                                                                                                       |
 
 ## Required remaining work
 

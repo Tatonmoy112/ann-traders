@@ -3,7 +3,8 @@ import type { NextConfig } from 'next';
 const developmentMedia =
   process.env.VERCEL_ENV !== 'production' &&
   (process.env.R2_ENVIRONMENT === 'development' || process.env.NODE_ENV === 'development');
-const delivery = process.env.R2_PUBLIC_BASE_URL ? new URL(process.env.R2_PUBLIC_BASE_URL) : null;
+const deliveryBase = process.env.R2_PUBLIC_BASE_URL?.trim();
+const delivery = deliveryBase ? new URL(deliveryBase) : null;
 if (
   delivery &&
   (delivery.username ||
@@ -28,7 +29,7 @@ const config: NextConfig = {
   ...(process.env.BUILD_STANDALONE === 'true' ? { output: 'standalone' } : {}),
   poweredByHeader: false,
   transpilePackages: ['@ann/ui', '@ann/domain', '@ann/database'],
-  experimental: { proxyClientMaxBodySize: '1kb' },
+  experimental: { proxyClientMaxBodySize: '2kb' },
   images: {
     dangerouslyAllowLocalIP: false,
     dangerouslyAllowSVG: false,

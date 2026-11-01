@@ -24,12 +24,16 @@ export const productInput = z.object({
   is_new_arrival: z.boolean().default(false),
   seo_title: z.string().max(255).nullable(),
   seo_description: z.string().max(1000).nullable(),
+  key_features: z.array(z.string().trim().min(1).max(300)).max(20).nullable().optional(),
+  sort_order: z.number().int().min(0).max(999999).optional(),
 });
 export const variantInput = z.object({
   id: uuid,
   sku: z.string().trim().min(1).max(100),
   variant_name: z.string().trim().min(1).max(255),
   model_number: z.string().max(150).nullable(),
+  manufacturer_part_number: z.string().max(150).nullable().optional(),
+  sort_order: z.number().int().min(0).max(999999).optional(),
   base_unit_id: uuid.nullable(),
   minimum_order_qty: optionalDecimal,
   minimum_order_unit_id: uuid.nullable(),
@@ -56,8 +60,8 @@ export const priceInput = z
     max_price: optionalDecimal,
     price_unit_id: uuid,
     trade_term: z.string().max(40),
-    valid_from: z.iso.datetime(),
-    valid_until: z.iso.datetime().nullable(),
+    valid_from: z.iso.datetime({ offset: true }),
+    valid_until: z.iso.datetime({ offset: true }).nullable(),
     is_active: z.boolean(),
   })
   .superRefine((v, c) => {
@@ -73,7 +77,7 @@ export const priceInput = z
         path: ['max_price'],
         message: 'Maximum must be at least minimum',
       });
-    if (v.valid_until && v.valid_until <= v.valid_from)
+    if (v.valid_until && Date.parse(v.valid_until) <= Date.parse(v.valid_from))
       c.addIssue({ code: 'custom', path: ['valid_until'], message: 'End must follow start' });
   });
 export const saveDraftInput = z
@@ -87,6 +91,26 @@ export const saveDraftInput = z
   .superRefine((v, c) => {
     if (new Set(v.variants.map((x) => x.sku.toLowerCase())).size !== v.variants.length)
       c.addIssue({ code: 'custom', path: ['variants'], message: 'SKUs must be unique' });
+    if (
+      new Set(v.variants.map((x) => x.id)).size !== v.variants.length ||
+      new Set(v.prices.map((x) => x.id)).size !== v.prices.length
+    )
+      c.addIssue({ code: 'custom', message: 'Duplicate variant or price identities' });
+    v.variants.forEach((variant, index) => {
+      if (!variant.base_unit_id || !variant.minimum_order_unit_id || !variant.capacity_unit_id)
+        c.addIssue({
+          code: 'custom',
+          path: ['variants', index],
+          message: 'Choose sale, MOQ and capacity units',
+        });
+      for (const key of ['minimum_order_qty', 'monthly_supply_capacity'] as const)
+        if (variant[key] !== null && Number(variant[key]) <= 0)
+          c.addIssue({
+            code: 'custom',
+            path: ['variants', index, key],
+            message: 'Quantity must be positive or empty',
+          });
+    });
     if (v.variants.filter((x) => x.is_default && x.is_active).length > 1)
       c.addIssue({
         code: 'custom',

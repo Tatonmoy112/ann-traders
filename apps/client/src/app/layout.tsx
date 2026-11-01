@@ -19,9 +19,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <head>
-        {process.env.R2_PUBLIC_BASE_URL && (
+        {process.env.R2_PUBLIC_BASE_URL ? (
           <link rel="preconnect" href={new URL(process.env.R2_PUBLIC_BASE_URL).origin} />
-        )}
+        ) : null}
       </head>
       <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
         <Providers>

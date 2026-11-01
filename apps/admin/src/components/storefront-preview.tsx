@@ -1,22 +1,10 @@
 'use client';
-import { useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Package,
-  CheckCircle2,
-  Clock,
-  Truck,
-  ShieldCheck,
-  Grid,
-  FileText,
-  Building2,
-  ExternalLink,
-  Download,
-} from 'lucide-react';
+import { Package, Grid, FileText } from 'lucide-react';
 import type { Product } from '@ann/database';
-import { formatPrice } from '@ann/domain';
 import { api } from '@/lib/client';
-import { Badge, Button } from '@ann/ui';
 
 type Variant = {
   id?: string;
@@ -43,6 +31,8 @@ type Price = {
   price_unit_id: string | null;
   trade_term?: string | null;
   is_active: boolean;
+  valid_from?: string;
+  valid_until?: string | null;
 };
 
 type Assets = {
@@ -75,6 +65,11 @@ export function StorefrontPreview({
   prices: Price[];
 }) {
   const [viewMode, setViewMode] = useState<'card' | 'detail'>('card');
+  const [previewTime, setPreviewTime] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setPreviewTime(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(() => {
     const defaultIdx = variants.findIndex((v) => v.is_default && v.is_active);
     return defaultIdx >= 0 ? defaultIdx : 0;
@@ -133,7 +128,13 @@ export function StorefrontPreview({
   const activeVariants = variants.filter((v) => v.is_active);
   const currentVariant = activeVariants[selectedVariantIndex] ?? activeVariants[0] ?? variants[0];
 
-  const currentPrice = prices.find((p) => p.is_active && p.variant_id === currentVariant?.id);
+  const currentPrice = prices.find(
+    (p) =>
+      p.is_active &&
+      p.variant_id === currentVariant?.id &&
+      (!p.valid_from || Date.parse(p.valid_from) <= previewTime) &&
+      (!p.valid_until || Date.parse(p.valid_until) > previewTime),
+  );
 
   const currentTiers = (priceTiers ?? [])
     .filter((t) => t.variant_price_id === currentPrice?.id)
@@ -236,7 +237,10 @@ export function StorefrontPreview({
             }}
           >
             {imageUrl ? (
-              <img
+              <Image
+                unoptimized
+                width={800}
+                height={800}
                 src={imageUrl}
                 alt={product.name}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -482,7 +486,10 @@ export function StorefrontPreview({
                 }}
               >
                 {imageUrl ? (
-                  <img
+                  <Image
+                    unoptimized
+                    width={800}
+                    height={800}
                     src={imageUrl}
                     alt={product.name}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
@@ -496,7 +503,10 @@ export function StorefrontPreview({
               {assets?.images && assets.images.length > 1 && (
                 <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
                   {assets.images.map((img) => (
-                    <img
+                    <Image
+                      unoptimized
+                      width={800}
+                      height={800}
                       key={img.id}
                       src={
                         img.object_manifest?.find((m) => m.kind === 'thumbnail')?.url ??
@@ -789,64 +799,65 @@ export function StorefrontPreview({
                   marginBottom: 16,
                 }}
               >
-                {product.description || product.short_description || 'Commercial textile supply item.'}
+                {product.description ||
+                  product.short_description ||
+                  'Commercial textile supply item.'}
               </p>
 
               {/* Technical Specifications & Downloads Section */}
-              {assets?.documents &&
-                assets.documents.filter((d) => d.is_public).length > 0 && (
-                  <div style={{ marginBottom: 16, borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
-                    <span
-                      style={{
-                        display: 'block',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.5px',
-                        color: '#64748b',
-                        marginBottom: 8,
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      Technical Data & Certification Downloads
-                    </span>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {assets.documents
-                        .filter((d) => d.is_public)
-                        .map((doc) => (
-                          <div
-                            key={doc.id}
+              {assets?.documents && assets.documents.filter((d) => d.is_public).length > 0 && (
+                <div style={{ marginBottom: 16, borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      letterSpacing: '0.5px',
+                      color: '#64748b',
+                      marginBottom: 8,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Technical Data & Certification Downloads
+                  </span>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {assets.documents
+                      .filter((d) => d.is_public)
+                      .map((doc) => (
+                        <div
+                          key={doc.id}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '5px 10px',
+                            borderRadius: 6,
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            fontSize: '0.78rem',
+                            color: '#1e293b',
+                            fontWeight: 500,
+                          }}
+                        >
+                          <FileText size={14} style={{ color: '#dc2626' }} />
+                          <span>{doc.title}</span>
+                          <span
                             style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 6,
-                              padding: '5px 10px',
-                              borderRadius: 6,
-                              background: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              fontSize: '0.78rem',
-                              color: '#1e293b',
-                              fontWeight: 500,
+                              fontSize: '0.68rem',
+                              background: '#e0e7ff',
+                              color: '#3730a3',
+                              padding: '1px 5px',
+                              borderRadius: 4,
+                              fontWeight: 600,
                             }}
                           >
-                            <FileText size={14} style={{ color: '#dc2626' }} />
-                            <span>{doc.title}</span>
-                            <span
-                              style={{
-                                fontSize: '0.68rem',
-                                background: '#e0e7ff',
-                                color: '#3730a3',
-                                padding: '1px 5px',
-                                borderRadius: 4,
-                                fontWeight: 600,
-                              }}
-                            >
-                              {doc.document_type}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
+                            {doc.document_type}
+                          </span>
+                        </div>
+                      ))}
                   </div>
-                )}
+                </div>
+              )}
 
               {/* Call-to-Action Mockup */}
               <div style={{ display: 'flex', gap: 10 }}>
@@ -854,7 +865,9 @@ export function StorefrontPreview({
                   type="button"
                   className="btn btn-primary"
                   style={{ flex: 1, padding: '0.6rem 1rem' }}
-                  onClick={() => alert('Storefront simulation: this opens the customer B2B quote request form.')}
+                  onClick={() =>
+                    alert('Storefront simulation: this opens the customer B2B quote request form.')
+                  }
                 >
                   Request B2B Quotation
                 </button>

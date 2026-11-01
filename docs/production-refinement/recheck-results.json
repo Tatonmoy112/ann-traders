@@ -1,0 +1,113 @@
+{
+  "recordedAt": "2026-11-01T06:51:38.785Z",
+  "scope": "Fresh recheck on 2026-11-01 Asia/Dhaka. Local/provider substitutes distinguished from configured-site anonymous reads. No remote mutations.",
+  "productionApproved": false,
+  "checks": [
+    {
+      "command": "vitest run (TEST_DATABASE_URL set)",
+      "exitCode": 0,
+      "passed": 204,
+      "files": 14,
+      "skipped": 0
+    },
+    {
+      "command": "verify-production-refinement.mjs",
+      "exitCode": 0,
+      "migrations": 29,
+      "checks": 9
+    },
+    {
+      "command": "turbo lint typecheck --force",
+      "exitCode": 0
+    },
+    {
+      "command": "next build --webpack (admin)",
+      "exitCode": 0
+    },
+    {
+      "command": "CLIENT_SECURITY_BUILD=true next build --webpack (client)",
+      "exitCode": 0
+    },
+    {
+      "command": "deno check (both Edge entrypoints)",
+      "exitCode": 0
+    },
+    {
+      "command": "playwright test",
+      "exitCode": 0,
+      "startTime": "2026-11-01T06:36:28.748Z",
+      "duration": 22647.8,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "command": "run-refinement-browser.mjs (port 3002)",
+      "exitCode": 0,
+      "passed": 10
+    },
+    {
+      "command": "verify-configured-client.mjs (user site port 3001)",
+      "exitCode": 0,
+      "passed": 9,
+      "runtimeErrors": 0
+    },
+    {
+      "command": "benchmark-production-refinement.mjs",
+      "exitCode": 0,
+      "volumes": [
+        500,
+        5000
+      ],
+      "olderVolumesNotRepeated": [
+        20000,
+        50000
+      ]
+    },
+    {
+      "command": "pnpm audit --prod --json",
+      "exitCode": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0
+      },
+      "dependencies": 179
+    },
+    {
+      "command": "audit-production-refinement.mjs / prepare-refinement-release.mjs",
+      "exitCode": 0,
+      "originalMigrations": 18,
+      "additiveMigrations": 11,
+      "hashesVerified": true
+    },
+    {
+      "command": "git diff --check / node --check / git check-ignore",
+      "exitCode": 0,
+      "newScripts": 8
+    }
+  ],
+  "additionalRepair": {
+    "migration": "20261101001100_publication_dictionary_serialization.sql",
+    "beforeAndAfter": "dictionary-race-check.json",
+    "newTests": 3,
+    "realSessionOrderings": 4
+  },
+  "knownLimitations": [
+    "Hosted advanced catalog migrations not applied; ledger/full role matrix pending",
+    "One synthetic image source returns HTTP 403",
+    "Demo contacts require verified replacements",
+    "Docker Linux engine unavailable: actual Supabase/pgTAP, official types and container checks blocked",
+    "Real Auth/MFA/Storage/worker/CDN/restore and business dictionary acceptance pending"
+  ],
+  "cleanup": {
+    "userWebsite": "Left running on localhost:3001",
+    "testServers": "Owned servers stopped by runners",
+    "isolatedPostgres": "Stopped after verification; databases retained",
+    "completed": true,
+    "completedAt": "2026-11-01T06:53:10.001Z"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "executedAt": "2026-11-01T06:38:41.178Z",
+  "scope": "New isolated local database, synthetic product, two real concurrent sessions",
+  "database": "ann_refinement_dictionary_before_1793515120311",
+  "beforeFix": {
+    "status": "published",
+    "is_active": false
+  },
+  "afterFix": {
+    "migrations": 29,
+    "result": "PASS",
+    "concurrencyChecks": [
+      {
+        "check": "Publication waits for a concurrent definition deactivation and rejects the committed inactive specification",
+        "result": "PASS"
+      },
+      {
+        "check": "Definition deactivation waits for publication and cannot invalidate the newly published product",
+        "result": "PASS"
+      },
+      {
+        "check": "Publication waits for a concurrent option deactivation and rejects the inactive choice without deadlock",
+        "result": "PASS"
+      },
+      {
+        "check": "Option deactivation waits for publication and cannot invalidate the newly published choice",
+        "result": "PASS"
+      }
+    ]
+  }
+}

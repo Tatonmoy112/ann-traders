@@ -1,0 +1,54 @@
+{
+  "executedAt": "2026-11-01T06:43:57.684Z",
+  "scope": "Anonymous hosted GET reads only; no mutations or privileged credentials",
+  "checks": [
+    {
+      "check": "products raw table",
+      "status": 401,
+      "errorCode": "42501"
+    },
+    {
+      "check": "administrator raw table",
+      "status": 401,
+      "errorCode": "42501"
+    },
+    {
+      "check": "audit raw table",
+      "status": 401,
+      "errorCode": "42501"
+    },
+    {
+      "check": "private document metadata",
+      "status": 401,
+      "errorCode": "42501"
+    },
+    {
+      "check": "advanced listing",
+      "status": 404,
+      "errorCode": "PGRST202"
+    },
+    {
+      "check": "published listing",
+      "status": 200,
+      "rows": 2
+    }
+  ],
+  "images": [
+    {
+      "origin": "https://pub-fbd4e8d632d144688a922a2fbc830b3f.r2.dev",
+      "status": 200,
+      "type": "image/webp"
+    },
+    {
+      "origin": "https://pub-fbd4e8d632d144688a922a2fbc830b3f.r2.dev",
+      "status": 200,
+      "type": "image/webp"
+    },
+    {
+      "origin": "https://imagedelivery.net",
+      "status": 403,
+      "type": "text/plain; charset=utf-8"
+    }
+  ],
+  "expectedBoundaries": true
+}

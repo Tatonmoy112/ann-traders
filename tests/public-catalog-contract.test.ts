@@ -22,13 +22,16 @@ describe('public catalog contracts', () => {
     expect(filters.ascending).toBe(true);
     expect(parseCatalogFilters(new URLSearchParams('sort=name&asc=true')).ascending).toBe(true);
   });
-  it('retains Bengali search while removing PostgREST expression characters', () => {
+  it('retains Bengali and model-code punctuation while removing wildcards and expression delimiters', () => {
     const bangla = '\u09b8\u09c1\u09a4\u09be';
     const { search } = parseCatalogFilters(
       new URLSearchParams({ q: bangla + ',().name.eq.*_test%' }),
     );
     expect(search).toContain(bangla);
-    expect(search).not.toMatch(/[,.()*_%]/);
+    expect(search).not.toMatch(/[,()*%]/);
+    expect(parseCatalogFilters(new URLSearchParams({ q: 'MODEL_2.4/A+B' })).search).toBe(
+      'MODEL_2.4/A+B',
+    );
   });
   it('renders unit-correct fixed, range and on-request labels', () => {
     expect(priceLabel({ type: 'fixed', min: '100', currency: 'BDT', unit: 'kg' })).toBe(

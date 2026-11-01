@@ -32,7 +32,9 @@ type Detail = { product: Product; variants: Variant[]; prices: Price[] };
 const variantFields: FieldConfig[] = [
   { key: 'sku', label: 'SKU', required: true },
   { key: 'variant_name', label: 'Variant name', required: true },
-  { key: 'model_number', label: 'Model / part number' },
+  { key: 'model_number', label: 'Model number' },
+  { key: 'manufacturer_part_number', label: 'Manufacturer part number' },
+  { key: 'sort_order', label: 'Sort order', type: 'number' },
   { key: 'base_unit_id', label: 'Sale unit', lookup: 'units', required: true },
   { key: 'minimum_order_qty', label: 'MOQ quantity' },
   { key: 'minimum_order_unit_id', label: 'MOQ unit', lookup: 'units', required: true },
@@ -68,6 +70,7 @@ const basicsFields: FieldConfig[] = [
   { key: 'is_new_arrival', label: 'New arrival', type: 'boolean' },
   { key: 'seo_title', label: 'SEO title' },
   { key: 'seo_description', label: 'SEO description', type: 'textarea' },
+  { key: 'sort_order', label: 'Sort order', type: 'number' },
 ];
 export function ProductEditor({ id, canPublish }: { id: string; canPublish: boolean }) {
   const query = useQuery({
@@ -147,7 +150,17 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
   };
   const save = useMutation({
     mutationFn: async () => {
-      const payload = saveDraftInput.parse({ id, revision, product, variants, prices });
+      const payload = saveDraftInput.parse({
+        id,
+        revision,
+        product: {
+          ...product,
+          key_features:
+            product.key_features?.map((feature) => feature.trim()).filter(Boolean) ?? null,
+        },
+        variants,
+        prices,
+      });
       return api(`/api/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
     },
     onSuccess: async () => {
@@ -173,7 +186,14 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
     queryFn: () => api<string[]>(`/api/admin/products/${id}/review`),
     enabled: tab === 'Review & publish',
   });
+  const documentChoices = useQuery({
+    queryKey: ['assets', id],
+    queryFn: () =>
+      api<{ documents: { id: string; title: string }[] }>(`/api/admin/products/${id}/assets`),
+    enabled: tab === 'Classification',
+  });
   const localChoices: Record<string, Row[]> = {
+    product_documents: (documentChoices.data?.documents || []) as Row[],
     product_variants: variants as unknown as Row[],
     variant_prices: prices.map((p) => {
       const v = variants.find((x) => x.id === p.variant_id);
@@ -235,7 +255,10 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
             disabled={duplicating}
             title="Duplicate this product as a new draft"
             onClick={async () => {
-              if (dirty && !window.confirm('You have unsaved changes. Duplicate from the last saved state?'))
+              if (
+                dirty &&
+                !window.confirm('You have unsaved changes. Duplicate from the last saved state?')
+              )
                 return;
               setDuplicating(true);
               try {
@@ -324,6 +347,19 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
               }}
               disabled={!editable}
             />
+            <Field label="Key features" hint="One feature per line, up to 20 features.">
+              <textarea
+                disabled={!editable}
+                value={product.key_features?.join('\n') ?? ''}
+                onChange={(event) => {
+                  setProduct({
+                    ...product,
+                    key_features: event.target.value ? event.target.value.split('\n') : [],
+                  });
+                  setDirty(true);
+                }}
+              />
+            </Field>
           </div>
         </section>
       )}
@@ -547,7 +583,9 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
                       <Field label="Valid from (UTC)">
                         <input
                           type="datetime-local"
-                          value={p.valid_from.slice(0, 16)}
+                          value={
+                            p.valid_from ? new Date(p.valid_from).toISOString().slice(0, 16) : ''
+                          }
                           onChange={(e) =>
                             update({
                               ...p,
@@ -559,7 +597,9 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
                       <Field label="Valid until (UTC)">
                         <input
                           type="datetime-local"
-                          value={p.valid_until?.slice(0, 16) ?? ''}
+                          value={
+                            p.valid_until ? new Date(p.valid_until).toISOString().slice(0, 16) : ''
+                          }
                           onChange={(e) =>
                             update({
                               ...p,
@@ -605,6 +645,7 @@ function Editor({ id, detail, canPublish }: { id: string; detail: Detail; canPub
       {tab === 'Images & documents' && (
         <ProductAssets
           id={id}
+          variants={variants}
           revision={revision}
           editable={editable && !dirty}
           onSaved={refresh}

@@ -10,10 +10,9 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
       <Link href={`/products/${product.slug}`} className="block aspect-4/3 bg-slate-100 relative">
         {product.image_url ? (
           <CatalogImage
+            key={product.image_url}
             src={product.image_url}
             alt={product.name}
-            width={768}
-            height={576}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (

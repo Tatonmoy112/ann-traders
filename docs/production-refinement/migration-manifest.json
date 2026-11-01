@@ -1,0 +1,125 @@
+{
+  "scope": "ANN Traders 2026-11-01 additive production refinement",
+  "productionAuthorized": false,
+  "databaseConnections": 0,
+  "prerequisiteMigrations": [
+    {
+      "file": "20261024000100_core.sql",
+      "sha256": "909e3e63b02822941cda56a642dd61b413c92976415dc4ae4269ffc4b8fc4475"
+    },
+    {
+      "file": "20261024000200_integrity.sql",
+      "sha256": "a36df1bd0751e28b8f35b5bf301ddfdc31f049f69a948687c62fcc7d6202fe1a"
+    },
+    {
+      "file": "20261024000300_security_rpc.sql",
+      "sha256": "99195056c70ae92b46c27e04533c06fe3c9df31cf5503b74ea76126b04b41c7d"
+    },
+    {
+      "file": "20261024000400_relations_search.sql",
+      "sha256": "dd6dca61e3e5cec718596e9ccf20aee8c99ac34be7bd4375dd33de4d7dfb29e9"
+    },
+    {
+      "file": "20261024000500_media.sql",
+      "sha256": "c3f64da4b9b6a6b0fd8524c432306f0e045f01f40b30eb5b0455395f9ec8d03e"
+    },
+    {
+      "file": "20261024000600_hardening.sql",
+      "sha256": "02538eca4f71239883308925bf419f89f6a5b947c97f7841620c4b3387d9e898"
+    },
+    {
+      "file": "20261024000700_audit_and_public.sql",
+      "sha256": "ecb2ca595e2905601209c2be726db07af59ad9d998097f164fc0888efe56888a"
+    },
+    {
+      "file": "20261024000800_outbox.sql",
+      "sha256": "c322d0544d6f7fd81aa4fd97dd677f7c9d23d11e82f069550192fdd1f0aaba9c"
+    },
+    {
+      "file": "20261024000900_query_guards.sql",
+      "sha256": "c3c9f3f45a41301c5bde08dc68afe4628896349b2e2cdd51bc3875e8184087bb"
+    },
+    {
+      "file": "20261024001000_domain_checks.sql",
+      "sha256": "ba01fb09d610c2b628a69fca0a1d562ad1a51767e69435526ce2497ab2b10a8b"
+    },
+    {
+      "file": "20261024001100_concurrent_publication.sql",
+      "sha256": "baef2d9560f26f4f9fd64d4e2da1d749f0bb1e798fbdb0c44d365ab5fa600948"
+    },
+    {
+      "file": "20261024001200_r2_media.sql",
+      "sha256": "cbf2cf362de0905d875d3a7189ddfb7d055d998422a1df987e2ef6227b8499f7"
+    },
+    {
+      "file": "20261024001300_r2_cleanup_bucket_contract.sql",
+      "sha256": "22c335d9c69f463801520e9894be8e2e6e994297752c3d522764ea008fee1e66"
+    },
+    {
+      "file": "20261024001400_public_image_keys.sql",
+      "sha256": "fc18c3052e028adbabfe2cf2524ae361fa5339def42b40f92c72a86363ef4409"
+    },
+    {
+      "file": "20261025000100_public_catalog_exposure.sql",
+      "sha256": "feb8263fe157f4971a59ad6fbddc1ad56080b0ed34474809fa5a251ddf7366ef"
+    },
+    {
+      "file": "20261025000200_inquiries_table.sql",
+      "sha256": "9e29faa944284d24b144c70c4c805d9bc6662cce4c08a534b04a3f028a2cc797"
+    },
+    {
+      "file": "20261031000100_public_catalog_read_models.sql",
+      "sha256": "00e4d127c73215e3730effed7c50d32d2fdc46add270a3e8f9758870d547ca38"
+    },
+    {
+      "file": "20261031000200_bounded_public_listing.sql",
+      "sha256": "e4dfe778102255507fcf6389d9bd760c2c81ec77c3ba2b04c4c0be205915a7f2"
+    }
+  ],
+  "additiveMigrations": [
+    {
+      "file": "20261101000100_catalog_integrity.sql",
+      "sha256": "e2a035aad93fe27338fb534e933a937d3e31ac7d387707cebe1e8d4e9ed0b8d3"
+    },
+    {
+      "file": "20261101000200_atomic_authoring.sql",
+      "sha256": "d97235ed279c0c9a6491d1d420b14f7a5e84e285719f0280d3ff30d07076e093"
+    },
+    {
+      "file": "20261101000300_document_lifecycle.sql",
+      "sha256": "ce4ac8d5687b05a6c24d93ed6520cab48e085e4e154bbc6eb43e8871c5479b7c"
+    },
+    {
+      "file": "20261101000400_public_catalog_discovery.sql",
+      "sha256": "0744e65db32fd46595c84f248800b6ce11be618b638e794fd714e2d5ea8ba353"
+    },
+    {
+      "file": "20261101000500_commercial_history.sql",
+      "sha256": "393c2c6b336d0159f3164164024cb6e78eb9918a8371a5e3b462f5595e8212f3"
+    },
+    {
+      "file": "20261101000600_atomic_duplication.sql",
+      "sha256": "2a32b2881c6b3b7b80cceec9fbaa660581a04a9bf9d10561dc36b4d5eb4118f6"
+    },
+    {
+      "file": "20261101000700_asset_assignment_and_dictionary_guards.sql",
+      "sha256": "01091bc54ba4c307cebc468a851f4f538b84ade1afc358f614bc300702ca1a9c"
+    },
+    {
+      "file": "20261101000800_measured_catalog_name_index.sql",
+      "sha256": "f99bbd82f6c6831f603b98953d35578b4d717418345fc3cb2f0ae17d7e4c9050"
+    },
+    {
+      "file": "20261101000900_detail_visibility_plan.sql",
+      "sha256": "d03036b77e5ae756e8ca364f5cd2f1926d30f9313acc547e156e70d86688c45d"
+    },
+    {
+      "file": "20261101001000_finite_catalog_numbers.sql",
+      "sha256": "ccebcc208edf54769ec326256bf31ef91543db89ef7edb33f9c73f0bd157ed40"
+    },
+    {
+      "file": "20261101001100_publication_dictionary_serialization.sql",
+      "sha256": "d8fd498c3d21762a9b0a6a3196ae752ad2957e03b52e3a8f57a67d77506327aa"
+    }
+  ]
+}

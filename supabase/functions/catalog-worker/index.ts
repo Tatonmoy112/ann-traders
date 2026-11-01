@@ -28,6 +28,8 @@ Deno.serve(async (request) => {
   if (
     request.method !== 'POST' ||
     !secret ||
+    secret.length < 32 ||
+    secret.length > 256 ||
     !equal(request.headers.get('authorization') ?? '', `Bearer ${secret}`)
   )
     return new Response('Unauthorized', { status: 401 });

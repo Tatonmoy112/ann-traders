@@ -57,6 +57,13 @@ export default async function ProductPage({ params }: Props) {
           <h1 className="text-3xl font-bold">{product.name}</h1>
           <p className="text-sm text-slate-600">{product.product_code}</p>
           <p>{product.short_description}</p>
+          {!!product.key_features?.length && (
+            <ul className="list-disc pl-5 space-y-1">
+              {product.key_features.map((feature, index) => (
+                <li key={index}>{feature}</li>
+              ))}
+            </ul>
+          )}
           <ProductVariants product={product} variants={variants} />
           <Link
             href={`/contact?product=${encodeURIComponent(product.product_code)}`}

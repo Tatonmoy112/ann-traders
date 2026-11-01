@@ -12,7 +12,7 @@ export function catalogQueryError(
   }
   if (['PGRST202', 'PGRST205', '42P01', '42883'].includes(code)) {
     return new Error(
-      `${generic} [${code}]: Supabase cannot find the required public catalog views or listing function. Check migrations 20261031000100 and 20261031000200, then reload the PostgREST schema cache.`,
+      `${generic} [${code}]: Supabase cannot find the required public catalog views or listing function. Check migrations 20261031000100 and 20261031000200; advanced discovery requires 20261101000400. Reload the PostgREST schema cache after an authorized migration.`,
     );
   }
   if (code === '42501') {

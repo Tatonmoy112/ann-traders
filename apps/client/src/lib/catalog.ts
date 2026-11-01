@@ -3,11 +3,13 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { serverSupabase } from './supabase';
 import { catalogQueryError } from './catalog-errors';
+import { readCatalogCards, readCatalogFacets } from './catalog-discovery';
 import { publicImageUrl } from './catalog-media';
 import {
   categoryTree,
   currentPrice,
   currentVariantPrices,
+  InvalidCatalogFilter,
   type CatalogFilters,
 } from './catalog-contract';
 import type {
@@ -17,16 +19,15 @@ import type {
   ProductListResponse,
   ProductDetailResponse,
   CatalogDocument,
+  CatalogFacet,
 } from './types';
 
-export const CATALOG_TAG = 'public-catalog-v2';
+export const CATALOG_TAG = 'public-catalog-v3';
 const TTL = 30;
 const databaseSource = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || 'unconfigured';
 // Rotating keys bound freshness even when an upstream refresh fails. The
 // revalidate option alone permits stale-while-revalidate beyond the nominal TTL.
 const epoch = () => Math.floor(Date.now() / (TTL * 1000));
-const CARD_COLUMNS =
-  'id,slug,name,product_code,short_description,product_type,country_of_origin,is_featured,is_new_arrival,category_name,category_slug,brand_name,image_url,image_key,published_at,updated_at,display_price';
 function checked<T>(result: { data: T | null; error: unknown }): T {
   if (result.error) throw catalogQueryError(result.error);
   return result.data as T;
@@ -34,26 +35,9 @@ function checked<T>(result: { data: T | null; error: unknown }): T {
 const cachedCards = unstable_cache(
   async (filters: CatalogFilters, _epoch: number) => {
     void _epoch;
-    const result = await serverSupabase()
-      .rpc(
-        'list_product_cards',
-        {
-          category_filter: filters.category,
-          brand_filter: filters.brand,
-          search_query: filters.search,
-          featured_only: filters.featured,
-          new_only: filters.newArrivals,
-          page_number: filters.page,
-          page_size: filters.pageSize,
-          sort_field: filters.sort,
-          sort_ascending: filters.ascending,
-        },
-        { get: true },
-      )
-      .select(CARD_COLUMNS);
-    return checked(result) as unknown as CatalogProduct[];
+    return readCatalogCards(filters, decodeCursor(filters.cursor));
   },
-  ['public-cards-v2', databaseSource],
+  ['public-cards-v3', databaseSource],
   { tags: [CATALOG_TAG], revalidate: TTL },
 );
 async function visibleIds(ids: string[]) {
@@ -62,7 +46,7 @@ async function visibleIds(ids: string[]) {
   return new Set((data || []).map((row) => row.id as string));
 }
 export async function getProducts(filters: CatalogFilters): Promise<ProductListResponse> {
-  const rows = await cachedCards(filters, epoch());
+  const { rows, next_cursor } = await cachedCards(filters, epoch());
   const visible = await visibleIds(rows.map((row) => row.id));
   return {
     products: rows
@@ -78,7 +62,36 @@ export async function getProducts(filters: CatalogFilters): Promise<ProductListR
     page: filters.page,
     pageSize: filters.pageSize,
     hasMore: rows.length > filters.pageSize,
+    nextCursor:
+      rows.length > filters.pageSize && next_cursor
+        ? Buffer.from(JSON.stringify(next_cursor)).toString('base64url')
+        : null,
   };
+}
+function decodeCursor(cursor: string | null) {
+  if (!cursor) return undefined;
+  try {
+    if (cursor.length > 1024 || !/^[A-Za-z0-9_-]+$/.test(cursor)) throw new Error();
+    const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
+    if (
+      !decoded ||
+      typeof decoded !== 'object' ||
+      Array.isArray(decoded) ||
+      !/^[0-9a-f-]{36}$/i.test(decoded.id) ||
+      typeof decoded.value !== 'string' ||
+      decoded.value.length > 300 ||
+      !Number.isInteger(decoded.rank) ||
+      !['name', 'published_at', 'updated_at'].includes(decoded.sort) ||
+      !['asc', 'desc'].includes(decoded.direction)
+    )
+      throw new Error();
+    return decoded;
+  } catch {
+    throw new InvalidCatalogFilter('Invalid catalog cursor');
+  }
+}
+export async function getFacets(category: string): Promise<CatalogFacet[]> {
+  return readCatalogFacets(category);
 }
 const cachedCategories = unstable_cache(
   async (_epoch: number) => (
@@ -127,9 +140,9 @@ const cachedDetail = unstable_cache(
       .select('product,variants,documents,gallery')
       .eq('slug', slug)
       .maybeSingle();
-    return checked(result) as ProductDetailResponse | null;
+    return checked(result) as unknown as ProductDetailResponse | null;
   },
-  ['public-detail-v2', databaseSource],
+  ['public-detail-v3', databaseSource],
   { tags: [CATALOG_TAG], revalidate: TTL },
 );
 export const getProduct = cache(async (slug: string): Promise<ProductDetailResponse | null> => {
@@ -155,6 +168,7 @@ export const getProduct = cache(async (slug: string): Promise<ProductDetailRespo
       image_variants: images(data.product.image_variants || []),
     },
     gallery: images(data.gallery || []),
+    documents: data.documents.map(publicDocument),
     variants: data.variants.map((variant) => ({
       ...variant,
       prices: currentVariantPrices(variant.prices),
@@ -188,10 +202,19 @@ export async function getDocuments(params: URLSearchParams) {
     .range((page - 1) * pageSize, page * pageSize - 1);
   const documents = checked(result) as CatalogDocument[];
   return {
-    documents,
+    documents: documents.map(publicDocument),
     total: result.count || 0,
     page,
     pageSize,
     totalPages: Math.ceil((result.count || 0) / pageSize),
+  };
+}
+function publicDocument(document: CatalogDocument): CatalogDocument {
+  return {
+    ...document,
+    download_url:
+      process.env.CATALOG_PUBLIC_DOCUMENT_DOWNLOADS === 'true'
+        ? `/api/catalog/documents/${document.id}`
+        : undefined,
   };
 }

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, ArrowUpRight, Download, Trash2 } from 'lucide-react';
+import { FileText, ArrowUpRight, Download } from 'lucide-react';
 import { Badge, Button, Modal } from '@ann/ui';
 import { dhakaDate } from '@ann/domain';
 import { api } from '@/lib/client';
@@ -140,30 +140,6 @@ export function Library({ kind }: { kind: 'media' | 'documents' }) {
                           }}
                         >
                           <Download size={13} /> Download
-                        </Button>
-                        <Button
-                          variant="danger"
-                          style={{ minHeight: 30, padding: '3px 8px' }}
-                          aria-label={`Delete ${row.original.title}`}
-                          title={`Delete "${row.original.title}"`}
-                          onClick={async () => {
-                            if (
-                              !window.confirm(
-                                `Delete document "${row.original.title ?? 'file'}"? This removes it from storage.`,
-                              )
-                            )
-                              return;
-                            try {
-                              await api(`/api/admin/documents/${row.original.id}`, {
-                                method: 'DELETE',
-                              });
-                              query.refetch();
-                            } catch (e) {
-                              setError((e as Error).message);
-                            }
-                          }}
-                        >
-                          <Trash2 size={13} />
                         </Button>
                       </div>
                     ),

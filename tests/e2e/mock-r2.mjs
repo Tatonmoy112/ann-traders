@@ -159,7 +159,9 @@ export function createMockR2Server() {
   return { server, objects };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  createMockR2Server().server.listen(54330, '127.0.0.1', () =>
-    console.log('Local R2 double on 54330'),
+  createMockR2Server().server.listen(
+    Number(process.env.ANN_E2E_R2_PORT || 54330),
+    '127.0.0.1',
+    () => console.log('Local R2 double on 54330'),
   );
 }

@@ -4,20 +4,7 @@ import { RefreshCw, CheckCircle2, AlertCircle, HardDrive } from 'lucide-react';
 import { Button } from '@ann/ui';
 import { api } from '@/lib/client';
 
-type WorkerResult = {
-  timestamp: string;
-  outbox: {
-    claimed: number;
-    completed: number;
-    failed: number;
-    jobs: { id: string; type: string; success: boolean; error?: string }[];
-  };
-  orphanCleanup: {
-    scanned: number;
-    deleted: number;
-    freedBytes: number;
-  };
-};
+type WorkerResult = { completed: number; failed: number };
 
 export function WorkerTrigger() {
   const [running, setRunning] = useState(false);
@@ -100,12 +87,10 @@ export function WorkerTrigger() {
         >
           <CheckCircle2 size={13} />
           <span>
-            Outbox: {result.outbox.completed} jobs processed · Swept {result.orphanCleanup.deleted}{' '}
-            orphans ({result.orphanCleanup.scanned} scanned)
+            Outbox: {result.completed} completed ? {result.failed} failed (retained for retry)
           </span>
         </div>
       )}
     </div>
   );
 }
-

@@ -38,3 +38,5 @@ verify_enabled = true
 [functions.catalog-worker]
 # Dedicated high-entropy server secret is checked by the handler, not a user JWT.
 verify_jwt = false
+[functions.catalog-document]
+verify_jwt = false

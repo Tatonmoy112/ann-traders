@@ -29,7 +29,18 @@ export function Products() {
     router = useRouter(),
     query = params.toString();
   const [search, setSearch] = useState(params.get('q') ?? '');
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [selection, setSelection] = useState<{ query: string; rows: RowSelectionState }>({
+    query,
+    rows: {},
+  });
+  const rowSelection = selection.query === query ? selection.rows : {};
+  const setRowSelection = (
+    next: RowSelectionState | ((previous: RowSelectionState) => RowSelectionState),
+  ) =>
+    setSelection((previous) => ({
+      query,
+      rows: typeof next === 'function' ? next(previous.query === query ? previous.rows : {}) : next,
+    }));
   const [bulkFeedback, setBulkFeedback] = useState<{
     type: 'success' | 'warning' | 'error';
     message: string;
@@ -44,10 +55,6 @@ export function Products() {
     Object.entries(fields).forEach(([k, v]) => (v ? next.set(k, v) : next.delete(k)));
     router.replace(`/products?${next}`, { scroll: false });
   };
-
-  useEffect(() => {
-    setRowSelection({});
-  }, [query]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

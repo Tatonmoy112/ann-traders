@@ -28,6 +28,8 @@ export interface CatalogProduct {
   seo_title?: string | null;
   seo_description?: string | null;
   display_price?: DisplayPrice;
+  specifications?: VariantSpecification[];
+  key_features?: string[] | null;
 }
 
 export interface DisplayPrice {
@@ -77,9 +79,9 @@ export interface CatalogVariant {
   model_number: string | null;
   manufacturer_part_number: string | null;
   sale_unit: string;
-  minimum_order_qty: string;
+  minimum_order_qty: string | null;
   minimum_order_unit: string;
-  monthly_supply_capacity: string;
+  monthly_supply_capacity: string | null;
   capacity_unit: string;
   lead_time_days: number | null;
   availability_status: string;
@@ -87,6 +89,8 @@ export interface CatalogVariant {
   prices: VariantPrice[];
   specifications: VariantSpecification[];
   packaging?: { type: string; quantity: string; unit: string; description: string | null }[];
+  composition?: { fiber: string; percentage: string }[];
+  equipment?: { brand: string; model: string; notes: string | null }[];
 }
 
 export interface CatalogDocument {
@@ -146,4 +150,22 @@ export interface ProductListResponse {
   pageSize: number;
   totalPages: number | null;
   hasMore: boolean;
+  nextCursor?: string | null;
+}
+
+export interface CatalogAttributeFilter {
+  attribute: string;
+  option?: string;
+  min?: string;
+  max?: string;
+  boolean?: boolean;
+  text?: string;
+}
+export interface CatalogFacet {
+  id: string;
+  code: string;
+  name: string;
+  data_type: 'text' | 'number' | 'boolean' | 'select' | 'multi_select';
+  unit: string | null;
+  options: { id: string; label: string }[];
 }

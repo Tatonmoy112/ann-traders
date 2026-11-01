@@ -1,5 +1,7 @@
 'use client';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
+import { useDeferredValue, useState } from 'react';
 import type { FieldConfig } from '@ann/database';
 import { Field } from '@ann/ui';
 import { api } from '@/lib/client';
@@ -25,13 +27,27 @@ export function Lookup({
   'aria-describedby'?: string;
 }) {
   const local = choices !== undefined;
+  const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
   const { data, error } = useQuery({
-    queryKey: ['lookup', table],
-    queryFn: () => api<{ rows: Row[]; total: number }>(`/api/admin/masters/${table}?lookup=true`),
+    queryKey: ['lookup', table, deferredSearch, value],
+    queryFn: () =>
+      api<{ rows: Row[]; total: number }>(
+        `/api/admin/masters/${table}?${new URLSearchParams({ lookup: 'true', q: deferredSearch, selected: String(value || '') })}`,
+      ),
     enabled: !local,
   });
   return (
     <>
+      {!local && (
+        <input
+          aria-label={`Search ${table.replaceAll('_', ' ')}`}
+          placeholder="Search options"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          disabled={disabled}
+        />
+      )}
       <select
         id={id}
         aria-describedby={description}
@@ -55,7 +71,7 @@ export function Lookup({
         ))}
       </select>
       {!local && data && data.total > 500 && (
-        <small>Only the first 500 options are available in this editor.</small>
+        <small>Showing the first 500 matches. Search to find another option.</small>
       )}
     </>
   );
@@ -123,7 +139,10 @@ export function RecordFields({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {current ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <img
+                    <Image
+                      unoptimized
+                      width={56}
+                      height={56}
                       src={String(current)}
                       alt={f.label}
                       style={{
@@ -136,7 +155,9 @@ export function RecordFields({
                       }}
                     />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b', wordBreak: 'break-all' }}>
+                      <span
+                        style={{ fontSize: '0.75rem', color: '#64748b', wordBreak: 'break-all' }}
+                      >
                         {String(current).length > 40
                           ? String(current).slice(0, 37) + '…'
                           : String(current)}
@@ -144,7 +165,11 @@ export function RecordFields({
                       <button
                         type="button"
                         className="btn btn-outline"
-                        style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', width: 'fit-content' }}
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '0.15rem 0.4rem',
+                          width: 'fit-content',
+                        }}
                         onClick={() => change(null)}
                         disabled={disabled}
                       >
@@ -155,7 +180,7 @@ export function RecordFields({
                 ) : null}
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                  accept="image/jpeg,image/png,image/webp"
                   disabled={disabled}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];

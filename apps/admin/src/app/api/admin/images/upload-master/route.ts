@@ -1,12 +1,15 @@
 import { requireAdmin, HttpError } from '@/lib/auth';
-import { failure, json } from '@/lib/http';
+import { boundedBody, requireMutationOrigin, failure, json } from '@/lib/http';
 import { r2Store } from '@/lib/r2';
 import sharp from 'sharp';
 
 export async function POST(request: Request) {
   try {
     await requireAdmin(['super_admin', 'admin']);
-    const formData = await request.formData();
+    requireMutationOrigin(request);
+    const formData = await new Response(await boundedBody(request, 5300000), {
+      headers: { 'Content-Type': request.headers.get('content-type') || '' },
+    }).formData();
     const file = formData.get('file');
     const table = formData.get('table');
 
@@ -22,8 +25,8 @@ export async function POST(request: Request) {
       throw new HttpError(400, 'Image file size must be less than 5 MB.');
     }
 
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'].includes(file.type)) {
-      throw new HttpError(400, 'Supported image formats are JPEG, PNG, WebP, and SVG.');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      throw new HttpError(400, 'Supported image formats are JPEG, PNG, and WebP.');
     }
 
     const bytes = Buffer.from(await file.arrayBuffer());
@@ -31,27 +34,51 @@ export async function POST(request: Request) {
     const assetId = crypto.randomUUID();
 
     let outputBytes: Buffer;
-    let contentType = 'image/webp';
-    let extension = 'webp';
-
-    if (file.type === 'image/svg+xml') {
-      outputBytes = bytes;
-      contentType = 'image/svg+xml';
-      extension = 'svg';
-    } else {
+    const contentType = 'image/webp';
+    const extension = 'webp';
+    try {
       const isBrand = table === 'brands';
       const maxDimension = isBrand ? 512 : 1200;
 
-      outputBytes = await sharp(bytes)
+      const image = sharp(bytes, {
+        limitInputPixels: 40000000,
+        failOn: 'warning',
+        animated: false,
+      });
+      const metadata = await image.metadata();
+      if (
+        !metadata.width ||
+        !metadata.height ||
+        !['jpeg', 'png', 'webp'].includes(metadata.format || '') ||
+        metadata.width > 12000 ||
+        metadata.height > 12000 ||
+        (metadata.pages || 1) > 1
+      )
+        throw new Error('Invalid image');
+      outputBytes = await image
         .rotate()
-        .resize({ width: maxDimension, height: maxDimension, fit: 'inside', withoutEnlargement: true })
+        .resize({
+          width: maxDimension,
+          height: maxDimension,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
         .webp({ quality: 85 })
         .toBuffer();
+    } catch {
+      throw new HttpError(
+        422,
+        'Choose a valid, single-frame JPEG, PNG, or WebP image up to 12,000 pixels and 40 megapixels.',
+      );
     }
 
     const key = `masters/${table}/${assetId}.${extension}`;
 
-    await store.putMasterImage(key, outputBytes, contentType);
+    try {
+      await store.putMasterImage(key, outputBytes, contentType);
+    } finally {
+      store.client.destroy();
+    }
 
     const publicUrl = `${store.config.publicOrigin}/${key}`;
     return json({ url: publicUrl });

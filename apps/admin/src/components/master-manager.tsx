@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, FolderTree, Table } from 'lucide-react';
@@ -13,12 +14,16 @@ export function MasterManager({ table, canEdit }: { table: string; canEdit: bool
   const config = masters[table],
     client = useQueryClient();
   const [page, setPage] = useState(1),
+    [search, setSearch] = useState(''),
     [editing, setEditing] = useState<Row | null>(null),
     [values, setValues] = useState<Row>({}),
     [viewMode, setViewMode] = useState<'tree' | 'table'>('tree');
   const { data, isPending, error, refetch } = useQuery({
-    queryKey: ['masters', table, page],
-    queryFn: () => api<{ rows: Row[]; total: number }>(`/api/admin/masters/${table}?page=${page}`),
+    queryKey: ['masters', table, page, search],
+    queryFn: () =>
+      api<{ rows: Row[]; total: number }>(
+        `/api/admin/masters/${table}?${new URLSearchParams({ page: String(page), q: search })}`,
+      ),
   });
   const { data: allCategories } = useQuery({
     queryKey: ['masters', 'categories', 'all'],
@@ -51,7 +56,10 @@ export function MasterManager({ table, canEdit }: { table: string; canEdit: bool
           const val = getValue();
           if (f.type === 'image') {
             return val ? (
-              <img
+              <Image
+                unoptimized
+                width={32}
+                height={32}
                 src={String(val)}
                 alt={f.label}
                 style={{
@@ -161,6 +169,20 @@ export function MasterManager({ table, canEdit }: { table: string; canEdit: bool
         </div>
       </div>
       <section className="panel">
+        <div className="table-toolbar">
+          <label className="field">
+            Search {config.title}
+            <input
+              value={search}
+              maxLength={100}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+                setViewMode('table');
+              }}
+            />
+          </label>
+        </div>
         {error ? (
           <div className="alert" role="alert">
             {error.message}
@@ -175,11 +197,7 @@ export function MasterManager({ table, canEdit }: { table: string; canEdit: bool
             onEdit={(cat) => {
               save.reset();
               setEditing(cat);
-              setValues(
-                Object.fromEntries(
-                  config.fields.map((f) => [f.key, cat[f.key] ?? null]),
-                ),
-              );
+              setValues(Object.fromEntries(config.fields.map((f) => [f.key, cat[f.key] ?? null])));
             }}
             onAddChild={(parent) => {
               save.reset();

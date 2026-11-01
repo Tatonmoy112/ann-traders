@@ -1,10 +1,14 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@ann/database';
 
 export function serverSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
-  if (!url || !key) throw new Error('Public catalog Supabase configuration is missing');
+  if (!url || !key)
+    throw new Error(
+      'Public catalog Supabase configuration is missing. Configure apps/client/.env.local from its .env.example with the project URL and anonymous/publishable key, then restart the client.',
+    );
   const origin = new URL(url);
   if (
     origin.username ||
@@ -22,7 +26,7 @@ export function serverSupabase() {
     const claims = JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString());
     if (claims.role !== 'anon') throw new Error('Only anonymous Supabase keys are allowed');
   }
-  return createClient(url, key, {
+  return createClient<Database, 'public_catalog'>(url, key, {
     db: { schema: 'public_catalog', retry: false },
     global: {
       fetch: (input, init) => {

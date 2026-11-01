@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { HttpError } from './auth';
+import { trustedMutationOrigin } from './request-security';
 export const json = (data: unknown, status = 200) =>
   NextResponse.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } });
 export function failure(error: unknown) {
@@ -25,6 +26,16 @@ export function databaseError(error: { code?: string; message: string }): never 
     throw new HttpError(409, 'Another administrator changed this product. Reload before saving.');
   if (error.code === '42501')
     throw new HttpError(403, 'You do not have permission for this action.');
+  if (error.code === '23503')
+    throw new HttpError(
+      422,
+      'A referenced record is unavailable or belongs to another product. Reload and check the selection.',
+    );
+  if (['23502', '22P02', '22001', '22023'].includes(error.code ?? ''))
+    throw new HttpError(
+      422,
+      'Check required fields and use valid values within the supported limits.',
+    );
   if (['P0001', '23514', '23P01'].includes(error.code ?? ''))
     throw new HttpError(
       422,
@@ -33,13 +44,23 @@ export function databaseError(error: { code?: string; message: string }): never 
   throw new Error(`Database operation failed (${error.code ?? 'unknown'})`);
 }
 export async function body(request: Request) {
-  const origin = request.headers.get('origin');
-  if (!origin || origin !== (process.env.APP_ORIGIN ?? 'http://localhost:3000'))
-    throw new HttpError(403, 'Request origin is not allowed.');
+  requireMutationOrigin(request);
   if (!request.headers.get('content-type')?.startsWith('application/json'))
     throw new HttpError(415, 'Expected JSON');
   if (Number(request.headers.get('content-length') ?? 0) > 524288)
     throw new HttpError(413, 'Request is too large');
+  const bytes = await boundedBody(request, 524288);
+  try {
+    return JSON.parse(bytes.toString('utf8')) as unknown;
+  } catch {
+    throw new HttpError(400, 'Invalid JSON');
+  }
+}
+export function requireMutationOrigin(request: Request) {
+  if (!trustedMutationOrigin(request.headers))
+    throw new HttpError(403, 'Request origin is not allowed.');
+}
+export async function boundedBody(request: Request, limit: number) {
   const reader = request.body?.getReader();
   if (!reader) throw new HttpError(400, 'Missing request body');
   let bytes = 0;
@@ -48,15 +69,11 @@ export async function body(request: Request) {
     const { done, value } = await reader.read();
     if (done) break;
     bytes += value.length;
-    if (bytes > 524288) {
+    if (bytes > limit) {
       await reader.cancel();
       throw new HttpError(413, 'Request is too large');
     }
     parts.push(value);
   }
-  try {
-    return JSON.parse(Buffer.concat(parts).toString('utf8')) as unknown;
-  } catch {
-    throw new HttpError(400, 'Invalid JSON');
-  }
+  return Buffer.concat(parts);
 }

@@ -1,4 +1,44 @@
-import type { CatalogCategory, DisplayPrice, VariantPrice } from './types';
+import type { CatalogCategory, CatalogAttributeFilter, DisplayPrice, VariantPrice } from './types';
+
+export class InvalidCatalogFilter extends Error {}
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function technicalFilters(params: URLSearchParams): CatalogAttributeFilter[] {
+  const filters = new Map<string, CatalogAttributeFilter>();
+  for (const [key, value] of params) {
+    if (!key.startsWith('spec.') || !value) continue;
+    const [, attribute, operator, extra] = key.split('.');
+    if (
+      !uuidPattern.test(attribute || '') ||
+      extra ||
+      !['option', 'min', 'max', 'boolean', 'text'].includes(operator)
+    )
+      throw new InvalidCatalogFilter('Invalid technical filter');
+    const filter = filters.get(attribute) || { attribute };
+    if (operator === 'option') {
+      if (!uuidPattern.test(value)) throw new InvalidCatalogFilter('Invalid option');
+      filter.option = value;
+    } else if (operator === 'boolean') {
+      if (!['true', 'false'].includes(value)) throw new InvalidCatalogFilter('Invalid boolean');
+      filter.boolean = value === 'true';
+    } else if (operator === 'text') {
+      if (value.length > 100) throw new InvalidCatalogFilter('Technical text is too long');
+      filter.text = value.trim();
+    } else {
+      if (!/^-?\d{1,14}(\.\d{1,4})?$/.test(value))
+        throw new InvalidCatalogFilter('Invalid specification range');
+      filter[operator as 'min' | 'max'] = value;
+    }
+    if (filters.size >= 8 && !filters.has(attribute))
+      throw new InvalidCatalogFilter('Use at most eight technical filters');
+    filters.set(attribute, filter);
+  }
+  const result = [...filters.values()];
+  if (
+    result.some((f) => f.min !== undefined && f.max !== undefined && Number(f.min) > Number(f.max))
+  )
+    throw new InvalidCatalogFilter('Minimum must not exceed maximum');
+  return result;
+}
 
 export type CatalogFilters = ReturnType<typeof parseCatalogFilters>;
 const boundedInt = (value: string | null, fallback: number, max: number) => {
@@ -13,7 +53,7 @@ export function parseCatalogFilters(params: URLSearchParams) {
     brand: params.get('brand')?.trim().slice(0, 180) || '',
     search: (params.get('q') || '')
       .slice(0, 80)
-      .replace(/[^\p{L}\p{M}\p{N}\s-]/gu, ' ')
+      .replace(/[^\p{L}\p{M}\p{N}\s._/+\-]/gu, ' ')
       .trim(),
     featured: params.get('featured') === 'true',
     newArrivals: params.get('new') === 'true',
@@ -21,6 +61,8 @@ export function parseCatalogFilters(params: URLSearchParams) {
     pageSize: boundedInt(params.get('pageSize'), 12, 24),
     sort: ['name', 'updated_at', 'published_at'].includes(sort) ? sort : 'updated_at',
     ascending: params.has('asc') ? params.get('asc') === 'true' : sortValue.endsWith('_asc'),
+    attributes: technicalFilters(params),
+    cursor: params.get('cursor') || null,
   };
 }
 export function categoryTree(rows: CatalogCategory[]): CatalogCategory[] {

@@ -1,3 +1,4 @@
+const r2Origin = 'http://127.0.0.1:' + (process.env.ANN_E2E_R2_PORT || '54330');
 import { test, expect, type Page } from '@playwright/test';
 import sharp from '../../apps/admin/node_modules/sharp';
 const origin = 'http://127.0.0.1:3100';
@@ -29,7 +30,7 @@ test('expired signed PUT and unauthenticated verification are rejected', async (
   });
   expect(response.status()).toBe(200);
   const stage = await response.json();
-  await page.request.get('http://127.0.0.1:54330/__test/expire-uploads?enabled=true');
+  await page.request.get(r2Origin + '/__test/expire-uploads?enabled=true');
   try {
     expect(
       (
@@ -40,7 +41,7 @@ test('expired signed PUT and unauthenticated verification are rejected', async (
       ).status(),
     ).toBe(403);
   } finally {
-    await page.request.get('http://127.0.0.1:54330/__test/expire-uploads?enabled=false');
+    await page.request.get(r2Origin + '/__test/expire-uploads?enabled=false');
   }
   const unauthenticated = await request.post('/api/admin/images/complete-upload', {
     headers: { Origin: origin },
@@ -124,7 +125,7 @@ test('provider outage retains a retry path without a public attachment', async (
   })
     .png()
     .toBuffer();
-  await page.request.get('http://127.0.0.1:54330/__test/fault?enabled=true');
+  await page.request.get(r2Origin + '/__test/fault?enabled=true');
   try {
     await page
       .getByLabel('Upload product image', { exact: true })
@@ -133,7 +134,7 @@ test('provider outage retains a retry path without a public attachment', async (
       page.getByRole('button', { name: 'Retry image upload', exact: true }),
     ).toBeVisible();
   } finally {
-    await page.request.get('http://127.0.0.1:54330/__test/fault?enabled=false');
+    await page.request.get(r2Origin + '/__test/fault?enabled=false');
   }
   await page.getByRole('button', { name: 'Retry image upload', exact: true }).click();
   await expect(page.getByText(/Revision 2/)).toBeVisible();

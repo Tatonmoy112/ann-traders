@@ -270,7 +270,11 @@ export class R2Store {
         Body: bytes,
         ContentLength: bytes.length,
         ContentType: contentType,
-        CacheControl: 'public, max-age=31536000, immutable',
+        CacheControl:
+          this.config.environment === 'development'
+            ? 'no-store'
+            : 'public, max-age=31536000, immutable',
+        IfNoneMatch: '*',
       }),
       { abortSignal: AbortSignal.timeout(15000) },
     );

@@ -20,7 +20,7 @@ const allowed = new Set([
   'visibility',
   'documents',
 ]);
-const server = http.createServer(async (req, res) => {
+async function handleRequest(req, res) {
   try {
     const url = new URL(req.url, 'http://127.0.0.1:55440');
     if (url.pathname === '/_test/unavailable') {
@@ -48,6 +48,37 @@ const server = http.createServer(async (req, res) => {
       return res.end('unavailable');
     }
     const view = url.pathname.split('/').at(-1);
+    if (
+      ['browse_product_cards', 'category_filters'].includes(view) &&
+      req.method === 'GET' &&
+      req.headers['accept-profile'] === 'public_catalog' &&
+      req.headers.apikey === 'test-public-key'
+    ) {
+      const text = (key) => url.searchParams.get(key) || '';
+      const values =
+        view === 'category_filters'
+          ? [text('category_filter')]
+          : [
+              text('category_filter'),
+              text('brand_filter'),
+              text('search_query'),
+              text('featured_only') === 'true',
+              text('new_only') === 'true',
+              Number(text('page_number') || 1),
+              Number(text('page_size') || 12),
+              text('sort_field') || 'updated_at',
+              text('sort_ascending') === 'true',
+              text('attribute_filters') || '[]',
+              text('after_cursor') || null,
+            ];
+      const sql =
+        view === 'category_filters'
+          ? 'select public_catalog.category_filters($1) as result'
+          : 'select public_catalog.browse_product_cards($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) as result';
+      const { rows } = await db.query(sql, values);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(rows[0].result));
+    }
     if (
       view === 'list_product_cards' &&
       req.method === 'GET' &&
@@ -139,6 +170,16 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: 'Test transport failed' }));
   }
+}
+// This fixture owns one transaction/session, so requests must use it serially.
+let queue = Promise.resolve();
+const server = http.createServer((req, res) => {
+  queue = queue
+    .then(() => handleRequest(req, res))
+    .catch(() => {
+      res.writeHead(500);
+      res.end('Test transport failed');
+    });
 });
 server.listen(55440, '127.0.0.1', () => console.log('Public catalog fixture ready on 55440'));
 async function stop() {

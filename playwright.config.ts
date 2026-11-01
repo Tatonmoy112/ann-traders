@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test';
 import fs from 'node:fs';
+const supabaseOrigin = 'http://127.0.0.1:' + (process.env.ANN_E2E_SUPABASE_PORT || '54329');
+const r2Origin = 'http://127.0.0.1:' + (process.env.ANN_E2E_R2_PORT || '54330');
 const existing = 'C:/Users/taton/AppData/Local/ms-playwright/chromium-1248/chrome-win64/chrome.exe';
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -18,12 +20,12 @@ export default defineConfig({
   webServer: [
     {
       command: 'node tests/e2e/mock-r2.mjs',
-      url: 'http://127.0.0.1:54330/health',
+      url: r2Origin + '/health',
       reuseExistingServer: !process.env.CI,
     },
     {
       command: 'node tests/e2e/mock-supabase.mjs',
-      url: 'http://127.0.0.1:54329/health',
+      url: supabaseOrigin + '/health',
       reuseExistingServer: !process.env.CI,
     },
     {
@@ -32,7 +34,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
       env: {
-        NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54329',
+        NEXT_PUBLIC_SUPABASE_URL: supabaseOrigin,
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
         APP_ORIGIN: 'http://127.0.0.1:3100',
         NEXT_TELEMETRY_DISABLED: '1',
@@ -43,8 +45,8 @@ export default defineConfig({
         R2_SECRET_ACCESS_KEY: 'test-r2-secret',
         R2_STAGING_BUCKET: 'private-stage',
         R2_PUBLIC_BUCKET: 'public-images',
-        R2_PUBLIC_BASE_URL: 'http://127.0.0.1:54330',
-        R2_ENDPOINT: 'http://127.0.0.1:54330',
+        R2_PUBLIC_BASE_URL: r2Origin,
+        R2_ENDPOINT: r2Origin,
       },
     },
   ],

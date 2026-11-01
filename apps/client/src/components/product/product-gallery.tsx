@@ -31,8 +31,6 @@ export function ProductGallery({
             key={current}
             src={current}
             alt={productName}
-            width={2000}
-            height={2000}
             sizes="(max-width: 1024px) 100vw, 50vw"
             priority={index === 0}
           />
@@ -54,13 +52,11 @@ export function ProductGallery({
               aria-label={`View image ${position + 1}`}
               aria-pressed={index === position}
               onClick={() => setIndex(position)}
-              className="w-20 h-20 shrink-0 rounded-lg border overflow-hidden"
+              className="relative w-20 h-20 shrink-0 rounded-lg border overflow-hidden"
             >
               <CatalogImage
                 src={url}
                 alt={`${productName} thumbnail ${position + 1}`}
-                width={80}
-                height={80}
                 sizes="80px"
               />
             </button>

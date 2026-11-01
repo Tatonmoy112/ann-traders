@@ -1,0 +1,47 @@
+{
+  "executedAt": "2026-11-01T06:42:45.791Z",
+  "environment": "Local Next production server, real anonymous PostgreSQL queries through an explicit PostgREST transport double; synthetic CDN images intercepted. Not hosted Supabase or R2.",
+  "checks": [
+    {
+      "check": "Initial product HTML is server rendered and hydrates without a browser product-fetch waterfall",
+      "result": "PASS"
+    },
+    {
+      "check": "Cursor pagination returns the remaining six products without duplicates",
+      "result": "PASS"
+    },
+    {
+      "check": "Configured numeric technical filters work through JSONB GET arguments and SSR navigation",
+      "result": "PASS"
+    },
+    {
+      "check": "API finds exact SKUs, returns zero for unknown filters and rejects public mutations",
+      "result": "PASS"
+    },
+    {
+      "check": "Variant selection renders current range prices, MOQ, units, technical specifications and packaging",
+      "result": "PASS"
+    },
+    {
+      "check": "Previously cached details and cards fail closed immediately after publication withdrawal",
+      "result": "PASS"
+    },
+    {
+      "check": "Signed outbox events expire the catalog cache; forged signatures are rejected",
+      "result": "PASS"
+    },
+    {
+      "check": "Company information remains available during catalog outages without showing stale product cards",
+      "result": "PASS"
+    },
+    {
+      "check": "An upstream outage returns an explicit unavailable response instead of stale publication visibility",
+      "result": "PASS"
+    },
+    {
+      "check": "390px layout fits the viewport and contact navigation contains no customer submission/storage form",
+      "result": "PASS"
+    }
+  ],
+  "result": "PASS"
+}

@@ -1,0 +1,47 @@
+{
+  "executedAt": "2026-11-01T06:40:12.894Z",
+  "scope": "Local PostgreSQL with test Auth/Storage substitutes; no remote operations",
+  "checks": [
+    {
+      "check": "All original table values, identifiers, price/media/document rows and audit records survive the additive upgrade",
+      "result": "PASS"
+    },
+    {
+      "check": "Two real admin connections serialize on the aggregate; the stale writer receives 40001",
+      "result": "PASS"
+    },
+    {
+      "check": "Overlapping commercial prices cannot commit concurrently, including canonical trade-term checks",
+      "result": "PASS"
+    },
+    {
+      "check": "Publication waits for a concurrent category-rule change and validates the committed requirement",
+      "result": "PASS"
+    },
+    {
+      "check": "Publication waits for a concurrent definition deactivation and rejects the committed inactive specification",
+      "result": "PASS"
+    },
+    {
+      "check": "Definition deactivation waits for publication and cannot invalidate the newly published product",
+      "result": "PASS"
+    },
+    {
+      "check": "Publication waits for a concurrent option deactivation and rejects the inactive choice without deadlock",
+      "result": "PASS"
+    },
+    {
+      "check": "Option deactivation waits for publication and cannot invalidate the newly published choice",
+      "result": "PASS"
+    },
+    {
+      "check": "Clean replay of all 29 original and additive migrations succeeds",
+      "result": "PASS"
+    }
+  ],
+  "databases": [
+    "ann_refinement_upgrade_1793515212894",
+    "ann_refinement_clean_1793515214328"
+  ],
+  "result": "PASS"
+}

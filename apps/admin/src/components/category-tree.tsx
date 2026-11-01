@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useState, useMemo } from 'react';
 import {
   ChevronRight,
@@ -151,7 +152,10 @@ export function CategoryTree({
 
             {/* Thumbnail or Folder Icon */}
             {node.image_path ? (
-              <img
+              <Image
+                unoptimized
+                width={24}
+                height={24}
                 src={String(node.image_path)}
                 alt={String(node.name)}
                 style={{

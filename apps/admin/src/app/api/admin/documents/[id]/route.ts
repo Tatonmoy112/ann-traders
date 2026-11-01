@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { requireAdmin, HttpError } from '@/lib/auth';
-import { databaseError, failure, json } from '@/lib/http';
+import { body, databaseError, failure, json } from '@/lib/http';
 import { integrationClient } from '@/lib/privileged';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -24,54 +24,41 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+const actionInput = z.object({
+  product: z.uuid(),
+  revision: z.number().int().positive(),
+  title: z.string().trim().min(1).max(255).optional(),
+  visible: z.boolean().optional(),
+  variant: z.uuid().nullable().optional(),
+});
+async function mutate(
+  request: Request,
+  params: Promise<{ id: string }>,
+  operation: 'retire' | 'metadata',
+) {
   try {
-    const { profile, db } = await requireAdmin(['super_admin', 'admin']);
+    const { db } = await requireAdmin();
     const { id } = await params;
     z.uuid().parse(id);
-
-    const { data: doc, error: findError } = await db
-      .from('product_documents')
-      .select('id, product_id, storage_path, bucket_id, title')
-      .eq('id', id)
-      .single();
-
-    if (findError || !doc) throw new HttpError(404, 'Document not found');
-
-    const privileged = integrationClient();
-
-    // 1. Remove binary from storage bucket
-    if (doc.storage_path) {
-      await privileged.storage.from(doc.bucket_id).remove([doc.storage_path]);
-    }
-
-    // 2. Remove row from product_documents table
-    const { error: deleteError } = await privileged
-      .from('product_documents')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) databaseError(deleteError);
-
-    // 3. Increment parent product revision
-    const { data: prod } = await db
-      .from('products')
-      .select('revision')
-      .eq('id', doc.product_id)
-      .single();
-
-    if (prod) {
-      await privileged
-        .from('products')
-        .update({
-          revision: (prod.revision ?? 0) + 1,
-          updated_by: profile.id,
-        })
-        .eq('id', doc.product_id);
-    }
-
-    return json({ success: true, id, productId: doc.product_id });
+    const input = actionInput.parse(await body(request));
+    const { data, error } = await db.rpc('product_document_action', {
+      product: input.product,
+      expected_revision: input.revision,
+      document: id,
+      operation,
+      title_text: input.title,
+      visible: input.visible,
+      variant: input.variant ?? undefined,
+    });
+    if (error) databaseError(error);
+    return json({ revision: data });
   } catch (e) {
     return failure(e);
   }
+}
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  return mutate(request, params, 'retire');
+}
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  return mutate(request, params, 'metadata');
 }

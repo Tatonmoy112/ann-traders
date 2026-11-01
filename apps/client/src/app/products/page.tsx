@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import Link from 'next/link';
-import { getCategories, getBrands, getProducts } from '@/lib/catalog';
+import { getCategories, getBrands, getProducts, getFacets } from '@/lib/catalog';
 import { parseCatalogFilters } from '@/lib/catalog-contract';
 import { ProductCard } from '@/components/catalog/product-card';
 import { CatalogControls } from '@/components/catalog/catalog-controls';
@@ -21,14 +21,17 @@ export default async function ProductsPage({
     if (typeof value === 'string') params.set(key, value);
   params.set('pageSize', '12');
   const filters = parseCatalogFilters(params);
-  const [data, categories, brands] = await Promise.all([
+  const [data, categories, brands, facets] = await Promise.all([
     getProducts(filters),
     getCategories(),
     getBrands(),
+    getFacets(filters.category),
   ]);
   const pageHref = (page: number) => {
     const next = new URLSearchParams(params);
     next.set('page', String(page));
+    next.delete('cursor');
+    if (page === data.page + 1 && data.nextCursor) next.set('cursor', data.nextCursor);
     return `/products?${next}`;
   };
   return (
@@ -37,7 +40,7 @@ export default async function ProductsPage({
         <Link href="/">Home</Link> / Products
       </nav>
       <h1 className="text-3xl font-bold">Industrial materials catalog</h1>
-      <CatalogControls categories={categories} brands={brands} filters={filters} />
+      <CatalogControls categories={categories} brands={brands} filters={filters} facets={facets} />
       <p className="text-sm text-slate-600">
         Page {data.page} - {data.products.length} products shown
       </p>

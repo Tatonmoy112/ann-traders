@@ -314,6 +314,10 @@ suite.sequential('PostgreSQL constraints, transactions, grants and RLS', () => {
       [unit],
     );
     await db.query(
+      "insert into public.category_attributes(category_id,attribute_id,applies_to) values($1,$2,'variant')",
+      [cat, unit],
+    );
+    await db.query(
       'insert into public.variant_attribute_values(variant_id,attribute_id,value_number) values($1,$2,70)',
       [variant, unit],
     );

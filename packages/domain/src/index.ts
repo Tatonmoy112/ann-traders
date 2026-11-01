@@ -34,7 +34,7 @@ export function convertWithinFamily(
   from: { family: string; factor: string },
   to: { family: string; factor: string },
 ): string {
-  if (from.family !== to.family || from.family === 'areal_density')
+  if (from.family !== to.family || ['areal_density', 'temperature'].includes(from.family))
     throw new Error('Incompatible quantity units');
   // Integer fixed-point rational arithmetic; presentation rounds to 4 decimal places.
   const scale = 100000000n;

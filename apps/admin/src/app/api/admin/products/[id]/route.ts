@@ -14,7 +14,7 @@ export async function GET(_request: Request, context: Context) {
       db
         .from('product_variants')
         .select(
-          'id,product_id,sku,variant_name,model_number,base_unit_id,minimum_order_qty::text,minimum_order_unit_id,monthly_supply_capacity::text,capacity_unit_id,lead_time_days,availability_status,is_default,is_active,sort_order',
+          'id,product_id,sku,variant_name,model_number,manufacturer_part_number,base_unit_id,minimum_order_qty::text,minimum_order_unit_id,monthly_supply_capacity::text,capacity_unit_id,lead_time_days,availability_status,is_default,is_active,sort_order',
         )
         .eq('product_id', id)
         .order('sort_order')
@@ -49,8 +49,8 @@ export async function GET(_request: Request, context: Context) {
         ...p,
         min_price: p.min_price === null ? null : String(p.min_price),
         max_price: p.max_price === null ? null : String(p.max_price),
-        valid_from: new Date(p.valid_from).toISOString(),
-        valid_until: p.valid_until ? new Date(p.valid_until).toISOString() : null,
+        valid_from: p.valid_from,
+        valid_until: p.valid_until,
       })),
     });
   } catch (e) {

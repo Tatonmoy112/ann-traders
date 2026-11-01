@@ -40,6 +40,27 @@ export function ProductVariants({
       <p className="text-sm">Availability: {variant.availability_status.replaceAll('_', ' ')}</p>
       <VolumeTierMatrix prices={variant.prices} />
       <ProductSpecsTable product={product} variant={variant} />
+      {!!variant.composition?.length && (
+        <div>
+          <h3 className="font-semibold">Fiber composition</h3>
+          {variant.composition.map((item) => (
+            <p className="text-sm" key={item.fiber}>
+              {item.fiber}: {item.percentage}%
+            </p>
+          ))}
+        </div>
+      )}
+      {!!variant.equipment?.length && (
+        <div>
+          <h3 className="font-semibold">Equipment compatibility</h3>
+          {variant.equipment.map((item, index) => (
+            <p className="text-sm" key={index}>
+              {item.brand} {item.model}
+              {item.notes ? ` — ${item.notes}` : ''}
+            </p>
+          ))}
+        </div>
+      )}
       {!!variant.packaging?.length && (
         <div>
           <h3 className="font-semibold">Packaging</h3>

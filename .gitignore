@@ -16,6 +16,8 @@ test-results/
 coverage/
 .local-db/
 .local-db-remediation/
+.local-db-refinement/
+.local-db-refinement.log
 .local-r2/
 .local-db.log
 .local-db-error.log

@@ -8,7 +8,11 @@ interface ProductSpecsTableProps {
 }
 
 export function ProductSpecsTable({ product, variant }: ProductSpecsTableProps) {
-  const specs = variant?.specifications || [];
+  const variantCodes = new Set(variant?.specifications.map((spec) => spec.code) || []);
+  const specs = [
+    ...(product.specifications || []).filter((spec) => !variantCodes.has(spec.code)),
+    ...(variant?.specifications || []),
+  ];
 
   return (
     <div className="space-y-4">
@@ -73,7 +77,9 @@ export function ProductSpecsTable({ product, variant }: ProductSpecsTableProps) 
                     Minimum Order Quantity (MOQ)
                   </td>
                   <td className="py-2.5 px-4 text-slate-800 font-bold">
-                    {variant.minimum_order_qty} {variant.minimum_order_unit}
+                    {variant.minimum_order_qty
+                      ? `${variant.minimum_order_qty} ${variant.minimum_order_unit}`
+                      : 'On request'}
                   </td>
                 </tr>
 

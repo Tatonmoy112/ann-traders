@@ -1,0 +1,57 @@
+{
+  "executedAt": "2026-11-01T06:35:48.970Z",
+  "scope": "Already-running local client; actual configured public catalog; GET requests only; no database mutations",
+  "checks": [
+    {
+      "check": "Homepage company information and published sections",
+      "result": "PASS"
+    },
+    {
+      "check": "Actual published product API",
+      "result": "PASS",
+      "products": 3
+    },
+    {
+      "check": "Search finds an existing published product code",
+      "result": "PASS"
+    },
+    {
+      "check": "Category filtering includes its existing published product",
+      "result": "PASS"
+    },
+    {
+      "check": "Existing R2 files load inside bounded desktop image frames",
+      "result": "PASS",
+      "loadedImages": 2,
+      "frameRatios": [
+        1.3344827586206895,
+        1.3344827586206895,
+        1.3298969072164948
+      ]
+    },
+    {
+      "check": "Existing published detail navigation and canonical metadata",
+      "result": "PASS"
+    },
+    {
+      "check": "Public detail/document reads omit private storage and audit fields",
+      "result": "PASS"
+    },
+    {
+      "check": "Contact page has no inquiry storage form; demo contacts cannot send messages",
+      "result": "PASS",
+      "demoContacts": true
+    },
+    {
+      "check": "390px image frames, viewport fit and mobile navigation",
+      "result": "PASS",
+      "frameRatios": [
+        1.3333333333333333,
+        1.3333333333333333,
+        1.3333333333333333
+      ]
+    }
+  ],
+  "runtimeErrors": [],
+  "result": "PASS"
+}

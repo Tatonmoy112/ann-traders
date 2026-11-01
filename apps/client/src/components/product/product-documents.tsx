@@ -17,12 +17,18 @@ export function ProductDocuments({ documents }: { documents: CatalogDocument[] }
             <h3 className="font-semibold">{doc.title}</h3>
             <p className="text-sm text-slate-600">{doc.document_type}</p>
           </div>
-          <Link
-            href={`/contact?product=${encodeURIComponent(doc.product_code || doc.title)}`}
-            className="text-sm text-blue-700"
-          >
-            Request document
-          </Link>
+          {doc.download_url ? (
+            <a href={doc.download_url} className="text-sm text-blue-700">
+              Download PDF
+            </a>
+          ) : (
+            <Link
+              href={`/contact?product=${encodeURIComponent(doc.product_code || doc.title)}`}
+              className="text-sm text-blue-700"
+            >
+              Request document
+            </Link>
+          )}
         </article>
       ))}
     </div>

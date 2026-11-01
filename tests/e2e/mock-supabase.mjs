@@ -1,3 +1,4 @@
+const mockOrigin = 'http://127.0.0.1:' + (process.env.ANN_E2E_SUPABASE_PORT || '54329');
 // Local provider double for browser tests only. Never imported by application code.
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -74,7 +75,7 @@ const claims = {
   email: user.email,
   exp: Math.floor(Date.now() / 1000) + 3600,
   iat: Math.floor(Date.now() / 1000),
-  iss: 'http://127.0.0.1:54329/auth/v1',
+  iss: mockOrigin + '/auth/v1',
 };
 const jwt =
   [{ alg: 'HS256', typ: 'JWT' }, claims]
@@ -87,7 +88,7 @@ function reply(res, data, status = 200, headers = {}) {
 http
   .createServer(async (req, res) => {
     try {
-      const url = new URL(req.url, 'http://127.0.0.1:54329');
+      const url = new URL(req.url, mockOrigin);
       let raw = '';
       for await (const chunk of req) raw += chunk;
       const body = raw ? JSON.parse(raw) : {};
@@ -323,6 +324,6 @@ http
       reply(res, { error: 'Test provider failed' }, 500);
     }
   })
-  .listen(54329, '127.0.0.1', () =>
+  .listen(Number(process.env.ANN_E2E_SUPABASE_PORT || 54329), '127.0.0.1', () =>
     console.log('Local Supabase provider double listening on 54329'),
   );

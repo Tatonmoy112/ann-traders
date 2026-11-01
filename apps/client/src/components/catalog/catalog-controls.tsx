@@ -2,16 +2,18 @@
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { CatalogCategory, CatalogBrand } from '@/lib/types';
+import type { CatalogCategory, CatalogBrand, CatalogFacet } from '@/lib/types';
 import type { CatalogFilters } from '@/lib/catalog-contract';
 export function CatalogControls({
   categories,
   brands,
   filters,
+  facets = [],
 }: {
   categories: CatalogCategory[];
   brands: CatalogBrand[];
   filters: CatalogFilters;
+  facets?: CatalogFacet[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -37,9 +39,79 @@ export function CatalogControls({
           name="q"
           defaultValue={filters.search}
           maxLength={80}
+          placeholder="Product, SKU, model or part number"
           className="block border rounded p-2 w-full mt-1"
         />
       </label>
+      {facets.slice(0, 8).map((facet) => {
+        const value = filters.attributes.find((filter) => filter.attribute === facet.id);
+        return (
+          <fieldset key={facet.id} className="text-sm space-y-1 min-w-0">
+            <legend>
+              {facet.name}
+              {facet.unit ? ` (${facet.unit})` : ''}
+            </legend>
+            {facet.data_type === 'number' ? (
+              <div className="flex gap-2">
+                {(['min', 'max'] as const).map((bound) => (
+                  <label
+                    key={`${facet.id}:${bound}:${value?.[bound] || ''}`}
+                    className="min-w-0 flex-1"
+                  >
+                    <span className="text-xs text-slate-500">
+                      {bound === 'min' ? 'Minimum' : 'Maximum'}
+                    </span>
+                    <input
+                      name={`spec.${facet.id}.${bound}`}
+                      aria-label={`${facet.name} ${bound === 'min' ? 'minimum' : 'maximum'}`}
+                      defaultValue={value?.[bound] || ''}
+                      inputMode="decimal"
+                      pattern="-?[0-9]+(\.[0-9]{1,4})?"
+                      className="block border rounded p-2 w-full"
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : facet.data_type === 'boolean' ? (
+              <select
+                aria-label={facet.name}
+                name={`spec.${facet.id}.boolean`}
+                key={String(value?.boolean)}
+                defaultValue={value?.boolean === undefined ? '' : String(value.boolean)}
+                className="block border rounded p-2 w-full"
+              >
+                <option value="">Any</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            ) : facet.data_type === 'text' ? (
+              <input
+                aria-label={facet.name}
+                name={`spec.${facet.id}.text`}
+                key={value?.text || ''}
+                defaultValue={value?.text || ''}
+                maxLength={100}
+                className="block border rounded p-2 w-full"
+              />
+            ) : (
+              <select
+                aria-label={facet.name}
+                name={`spec.${facet.id}.option`}
+                key={value?.option || ''}
+                defaultValue={value?.option || ''}
+                className="block border rounded p-2 w-full"
+              >
+                <option value="">Any</option>
+                {facet.options.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
+          </fieldset>
+        );
+      })}
       <label className="text-sm">
         Category
         <select

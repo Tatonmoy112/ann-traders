@@ -1,5 +1,7 @@
 # ANN Traders
 
+2026-11-01 refinement: [release status and evidence](docs/production-refinement/final-readiness-report.md). Nine additive migrations follow the original 18 migrations; the hosted project remains unmodified. The current work adds typed inherited specifications, atomic authoring/duplication/document retirement, SKU/technical discovery, cursor browsing, signed invalidation and measured query fixes. See the refinement deployment procedure before applying any migration. Existing verification sections below also contain historical evidence.
+
 Two independent Next.js 16 deployments share one Supabase database: `apps/admin` manages the catalog and `apps/client` serves the read-only public website. The public app includes `/`, `/products`, `/products/[slug]`, `/documents`, `/contact` and `/api/catalog/*`. It renders initial discovery data on the server using anonymous published-safe projections, bounded product cards and a short server data cache. The admin retains Supabase SSR authentication, roles/MFA, transactional editing/publication, price history, R2 media processing and audit history.
 
 **This is a tested development implementation, not a production readiness claim.** Live Supabase Auth/Storage, Cloudflare upload, invitation delivery, worker scheduling and deployment still require staging verification. Detailed remaining work is in [implementation status](docs/implementation-status.md). No remote database migrations or deployment have been performed.

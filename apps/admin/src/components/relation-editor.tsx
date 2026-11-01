@@ -39,7 +39,7 @@ export function RelationEditor({
     queryKey: ['category-specifications', categoryId],
     queryFn: () =>
       api<{ rows: Row[] }>(
-        `/api/admin/masters/category_attributes?lookup=true&category=${categoryId}`,
+        `/api/admin/masters/category_attributes?lookup=true&effective=true&category=${categoryId}`,
       ),
     enabled: specification && Boolean(categoryId),
   });
@@ -49,8 +49,7 @@ export function RelationEditor({
     ) ?? [];
   const allowedDefinitions =
     definitions.data?.rows.filter(
-      (d) =>
-        d.is_active && (applicable.length === 0 || applicable.some((m) => m.attribute_id === d.id)),
+      (d) => d.is_active && applicable.some((m) => m.attribute_id === d.id),
     ) ?? [];
   const { data, error, isPending } = useQuery({
     queryKey: ['relation', id, table],
@@ -97,7 +96,15 @@ export function RelationEditor({
         </div>
         <Button
           variant="outline"
-          disabled={isPending || Boolean(error)}
+          disabled={
+            isPending ||
+            Boolean(error) ||
+            (specification &&
+              (!categoryId ||
+                mappings.isPending ||
+                definitions.isPending ||
+                Boolean(mappings.error || definitions.error || options.error)))
+          }
           onClick={() => {
             mutation.reset();
             setEditing((data ?? []).map((v) => ({ ...v })));
@@ -107,6 +114,12 @@ export function RelationEditor({
         </Button>
       </div>
       {error && <div className="alert">{error.message}</div>}
+      {specification && (!categoryId || !applicable.length) && (
+        <p className="muted">
+          Save a primary category with configured specification rules first. Rules include its
+          ancestors.
+        </p>
+      )}
       {Boolean(data?.length) && (
         <div className="relation-preview">
           {data?.slice(0, 3).map((row, i) => (

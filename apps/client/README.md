@@ -16,6 +16,10 @@ corepack pnpm --filter @ann/client dev
 
 Use `pnpm.cmd` when pnpm is installed directly on Windows. The app listens on port 3001. Build/start with `pnpm --filter @ann/client build` and `pnpm --filter @ann/client start`.
 
+Running `npm run dev` from `apps/client` also works after configuring **`apps/client/.env.local`**. Next loads environment files from that application directory; a root or admin environment file does not configure this app. Keep `.env.local` ignored and restart development after changing connection or media settings. The committed examples deliberately contain placeholders.
+
+The client supports the original published-only `list_product_cards` API if the newer `browse_product_cards` RPC is not installed. Basic listing, search, category/brand filters, sorting and numbered pagination keep working. Technical facets and cursors require the additive discovery migration; unsupported technical filters are rejected rather than ignored. Authentication, permission and upstream errors never trigger a raw-table fallback. Do not apply hosted migrations just to resolve local configuration without approval.
+
 Review and apply migrations `20261031000100_public_catalog_read_models.sql` and `20261031000200_bounded_public_listing.sql` after the earlier migration chain. Never reset a hosted database. PostgREST must expose `public_catalog` (local configuration already does). Anonymous users get SELECT on restricted views and EXECUTE on a read-only, security-invoker listing function; they receive no normalized table access.
 
 ## Environment
@@ -24,9 +28,16 @@ Review and apply migrations `20261031000100_public_catalog_read_models.sql` and 
 - `NEXT_PUBLIC_SITE_URL`: canonical public HTTPS origin in production.
 - `R2_PUBLIC_BASE_URL`: server/build-time public image origin, used for Next image allowlists, CSP and preconnect. Production requires a custom HTTPS domain. Use `R2_ENVIRONMENT=production` at launch; explicit development mode allows local r2.dev testing. Existing imagedelivery.net assets remain supported.
 - `CATALOG_CONTACT_EMAIL`, `CATALOG_WHATSAPP_NUMBER`: verified business contact details. Unconfigured contacts are not invented.
+- `CATALOG_DEMO_CONTACTS=true`: clearly labeled preview contact information with no active email/WhatsApp links. Keep false when using verified real contacts.
 - `INTERNAL_CATALOG_REVALIDATE_SECRET`: at least 32 characters; operator-only manual purge secret. Never prefix this with NEXT_PUBLIC.
 
 No service-role, R2 API, Cloudflare purge or database-owner credential belongs in this deployment.
+
+For missing images, set `R2_PUBLIC_BASE_URL` to the exact public delivery origin used by approved product images. Local `r2.dev` delivery requires `R2_ENVIRONMENT=development`; production needs the verified custom HTTPS domain. An unconfigured origin is rejected intentionally. A source URL returning 403/404 still needs a valid asset; the client shows its image-unavailable fallback without relaxing the origin allowlist.
+
+Product cards keep a fixed 4:3 media frame. Gallery images and thumbnails use positioned Next Image fill, so tall source uploads cannot stretch the grid. Source content remains the actual uploaded file; changing which photograph belongs to a product is an admin publication workflow.
+
+Company information remains available on the homepage during catalog outages. Product/API routes continue to reject unavailable reads and do not serve stale withdrawn products.
 
 ## Security and Vercel deployment
 

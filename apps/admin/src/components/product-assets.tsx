@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Upload, FileText, Star, Trash2, Download } from 'lucide-react';
-import { Button, Field, Badge } from '@ann/ui';
+import { Button, Field, Badge, Modal } from '@ann/ui';
 import { api } from '@/lib/client';
 
 function formatBytes(bytes?: number | null) {
@@ -22,6 +22,7 @@ type Assets = {
     alt_text: string | null;
     object_manifest?: { kind: string; url: string; width: number }[];
     sort_order: number;
+    variant_id?: string | null;
   }[];
   documents: {
     id: string;
@@ -39,11 +40,13 @@ export function ProductAssets({
   revision,
   editable,
   onSaved,
+  variants = [],
 }: {
   id: string;
   revision: number;
   editable: boolean;
   onSaved: () => void;
+  variants?: { id: string; variant_name: string }[];
 }) {
   const client = useQueryClient(),
     [busy, setBusy] = useState(false),
@@ -58,13 +61,17 @@ export function ProductAssets({
   const [retry, setRetry] = useState<{ image: File; replacement?: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isDraggingPdf, setIsDraggingPdf] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<Assets['documents'][number] | null>(null);
 
   const handlePdfSelect = (selectedFile: File | null) => {
     if (!selectedFile) {
       setFile(null);
       return;
     }
-    if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+    if (
+      selectedFile.type !== 'application/pdf' &&
+      !selectedFile.name.toLowerCase().endsWith('.pdf')
+    ) {
       setError('Only PDF documents are supported for technical attachments.');
       return;
     }
@@ -84,11 +91,19 @@ export function ProductAssets({
   };
 
   const handleDeleteDocument = async (docId: string, docTitle: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${docTitle}"?`)) return;
+    if (
+      !window.confirm(
+        `Retire "${docTitle}" from this draft? Its file and history will be retained.`,
+      )
+    )
+      return;
     setBusy(true);
     setError('');
     try {
-      await api(`/api/admin/documents/${docId}`, { method: 'DELETE' });
+      await api(`/api/admin/documents/${docId}`, {
+        method: 'DELETE',
+        body: JSON.stringify({ product: id, revision }),
+      });
       await refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -279,6 +294,21 @@ export function ProductAssets({
                   )}
                 </div>
                 {editable && (
+                  <select
+                    aria-label="Image variant"
+                    value={m.variant_id || ''}
+                    disabled={busy || m.upload_status !== 'ready'}
+                    onChange={(event) => void action(m.id, 'variant', event.target.value)}
+                  >
+                    <option value="">All variants</option>
+                    {variants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.variant_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {editable && (
                   <input
                     aria-label="Image alt text"
                     placeholder="Describe this image"
@@ -348,7 +378,9 @@ export function ProductAssets({
                     flexWrap: 'wrap',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}
+                  >
                     <div
                       style={{
                         width: 36,
@@ -365,7 +397,9 @@ export function ProductAssets({
                       <FileText size={18} />
                     </div>
                     <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
+                      >
                         <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>{d.title}</strong>
                         <span
                           style={{
@@ -421,10 +455,49 @@ export function ProductAssets({
                     </Button>
                     {editable && (
                       <Button
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => setEditingDocument({ ...d })}
+                      >
+                        Edit document
+                      </Button>
+                    )}
+                    {editable && (
+                      <Button
+                        variant="outline"
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusy(true);
+                          setError('');
+                          try {
+                            await api(`/api/admin/documents/${d.id}`, {
+                              method: 'PATCH',
+                              body: JSON.stringify({
+                                product: id,
+                                revision,
+                                title: d.title,
+                                visible: !d.is_public,
+                                variant: d.variant_id ?? null,
+                              }),
+                            });
+                            await refresh();
+                          } catch (e) {
+                            setError((e as Error).message);
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        {d.is_public ? 'Make internal' : 'Make public'}
+                      </Button>
+                    )}
+                    {editable && (
+                      <Button
                         variant="danger"
                         style={{ fontSize: '0.8rem', padding: '4px 8px', minHeight: 32 }}
-                        aria-label={`Delete ${d.title}`}
-                        title={`Delete "${d.title}"`}
+                        disabled={busy}
+                        aria-label={`Retire ${d.title}`}
+                        title={`Retire "${d.title}"`}
                         onClick={() => handleDeleteDocument(d.id, d.title)}
                       >
                         <Trash2 size={14} />
@@ -509,7 +582,14 @@ export function ProductAssets({
                   onChange={(e) => handlePdfSelect(e.target.files?.[0] ?? null)}
                 />
                 {file ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 10,
+                    }}
+                  >
                     <FileText size={22} style={{ color: '#dc2626' }} />
                     <div style={{ textAlign: 'left' }}>
                       <strong style={{ fontSize: '0.88rem', display: 'block', color: '#0f172a' }}>
@@ -521,13 +601,24 @@ export function ProductAssets({
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
                     <Upload size={22} style={{ color: '#64748b' }} />
-                    <p style={{ margin: 0, fontWeight: 500, fontSize: '0.85rem', color: '#1e293b' }}>
-                      Drag and drop PDF document here, or <span style={{ color: '#2563eb', textDecoration: 'underline' }}>browse</span>
+                    <p
+                      style={{ margin: 0, fontWeight: 500, fontSize: '0.85rem', color: '#1e293b' }}
+                    >
+                      Drag and drop PDF document here, or{' '}
+                      <span style={{ color: '#2563eb', textDecoration: 'underline' }}>browse</span>
                     </p>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                      Supported: Technical Data Sheets (TDS), Safety Data (MSDS), OEKO-TEX, GOTS, Manuals (up to 10 MB)
+                      Supported: Technical Data Sheets (TDS), Safety Data (MSDS), OEKO-TEX, GOTS,
+                      Manuals (up to 10 MB)
                     </span>
                   </div>
                 )}
@@ -573,6 +664,90 @@ export function ProductAssets({
           )}
         </div>
       </section>
+      {editingDocument && (
+        <Modal
+          title="Edit document"
+          description="Save the title, public visibility and SKU assignment for this draft."
+          onClose={() => setEditingDocument(null)}
+        >
+          <form
+            onSubmit={async (event) => {
+              event.preventDefault();
+              setBusy(true);
+              setError('');
+              try {
+                await api(`/api/admin/documents/${editingDocument.id}`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    product: id,
+                    revision,
+                    title: editingDocument.title,
+                    visible: editingDocument.is_public,
+                    variant: editingDocument.variant_id || null,
+                  }),
+                });
+                setEditingDocument(null);
+                await refresh();
+              } catch (e) {
+                setError((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <div className="form-body">
+              {error && (
+                <div className="alert" role="alert">
+                  {error}
+                </div>
+              )}
+              <Field label="Document title">
+                <input
+                  required
+                  maxLength={255}
+                  value={editingDocument.title}
+                  onChange={(event) =>
+                    setEditingDocument({ ...editingDocument, title: event.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Document variant">
+                <select
+                  value={editingDocument.variant_id || ''}
+                  onChange={(event) =>
+                    setEditingDocument({
+                      ...editingDocument,
+                      variant_id: event.target.value || null,
+                    })
+                  }
+                >
+                  <option value="">All variants</option>
+                  {variants.map((variant) => (
+                    <option key={variant.id} value={variant.id}>
+                      {variant.variant_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={editingDocument.is_public}
+                  onChange={(event) =>
+                    setEditingDocument({ ...editingDocument, is_public: event.target.checked })
+                  }
+                />{' '}
+                Public when published
+              </label>
+            </div>
+            <div className="form-footer">
+              <Button disabled={busy} type="submit">
+                {busy ? 'Saving…' : 'Save document'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </>
   );
 }

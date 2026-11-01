@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { requireAdmin, HttpError } from '@/lib/auth';
-import { databaseError, failure, json } from '@/lib/http';
+import { boundedBody, requireMutationOrigin, databaseError, failure, json } from '@/lib/http';
 import { integrationClient } from '@/lib/privileged';
 import { validatePdf } from '@/lib/provider';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -8,33 +8,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { profile } = await requireAdmin();
     const { id } = await params;
     z.uuid().parse(id);
-    const origin = request.headers.get('origin');
-    const allowed = process.env.APP_ORIGIN ?? 'http://localhost:3000';
-    if (
-      origin &&
-      origin !== allowed &&
-      !origin.includes('localhost') &&
-      !origin.includes('127.0.0.1') &&
-      !origin.endsWith('.vercel.app')
-    ) {
-      throw new HttpError(403, 'Request origin is not allowed');
-    }
+    requireMutationOrigin(request);
     // Bounded stream before multipart parsing to avoid an unbounded upload allocation.
-    const reader = request.body?.getReader();
-    if (!reader) throw new HttpError(400, 'Missing file');
-    let size = 0;
-    const parts: Uint8Array[] = [];
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      size += value.length;
-      if (size > 10500000) {
-        await reader.cancel();
-        throw new HttpError(413, 'Maximum document size is 10 MB');
-      }
-      parts.push(value);
-    }
-    const form = await new Response(Buffer.concat(parts), {
+    const form = await new Response(await boundedBody(request, 10500000), {
       headers: { 'Content-Type': request.headers.get('content-type') ?? '' },
     }).formData();
     const file = form.get('file');

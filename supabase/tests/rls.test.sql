@@ -1,8 +1,8 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path=public,extensions;
-select extensions.plan(14);
-select extensions.is((select count(*)::integer from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity),28,'all core tables use RLS');
+select extensions.plan(19);
+select extensions.is((select count(*)::integer from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity and c.relname<>'inquiries'),28,'all core tables use RLS');
 select extensions.ok(not has_table_privilege('anon','public.products','SELECT'),'anon cannot read normalized products');
 select extensions.ok(not has_table_privilege('anon','public.products','INSERT'),'anon cannot insert products');
 select extensions.ok(not has_table_privilege('authenticated','public.admin_profiles','UPDATE'),'no direct self role escalation');
@@ -16,5 +16,10 @@ select extensions.ok(not has_function_privilege('authenticated','public.r2_creat
 select extensions.ok(not has_function_privilege('authenticated','public.r2_finish_upload(uuid,uuid,bigint,uuid,uuid)','EXECUTE'),'R2 attachment is server-only');
 select extensions.ok(has_function_privilege('service_role','public.r2_prepare_cleanup(uuid)','EXECUTE'),'service worker may reconcile R2 uploads');
 select extensions.ok(not has_function_privilege('service_role','public.attach_verified_image(uuid,uuid,bigint,uuid,text)','EXECUTE'),'old Images attachment path is disabled');
+select extensions.ok(not has_function_privilege('anon','public.product_document_action(uuid,bigint,uuid,text,text,boolean,uuid)','EXECUTE'),'anonymous document mutation is denied');
+select extensions.ok(not has_function_privilege('anon','public.duplicate_catalog_product(uuid,bigint)','EXECUTE'),'anonymous duplication is denied');
+select extensions.ok(not has_function_privilege('anon','public.get_category_attribute_rules(uuid)','EXECUTE'),'private specification rules require an administrator');
+select extensions.ok(has_function_privilege('anon','public_catalog.browse_product_cards(text,text,text,boolean,boolean,integer,integer,text,boolean,jsonb,jsonb)','EXECUTE'),'anonymous bounded discovery is enabled');
+select extensions.ok(not has_table_privilege('anon','public.product_documents','SELECT'),'private document paths stay private');
 select * from extensions.finish();
 rollback;

@@ -90,6 +90,7 @@ export class BurstLimiter {
   }
 }
 export function requestBudget(path: string, authenticatedPurge: boolean) {
+  if (path === '/api/catalog/events') return { key: 'events', global: 60, individual: 30 };
   if (path === '/api/catalog/revalidate' && authenticatedPurge)
     return { key: 'purge', global: 30, individual: 10 };
   if (path === '/_next/image') return { key: 'images', global: 2400, individual: 240 };
@@ -98,16 +99,40 @@ export function requestBudget(path: string, authenticatedPurge: boolean) {
 export function invalidApiQuery(path: string, params: URLSearchParams) {
   let allowed: string[];
   if (path === '/api/catalog/products')
-    allowed = ['category', 'brand', 'q', 'featured', 'new', 'page', 'pageSize', 'sort', 'asc'];
+    allowed = [
+      'category',
+      'brand',
+      'q',
+      'featured',
+      'new',
+      'page',
+      'pageSize',
+      'sort',
+      'asc',
+      'cursor',
+    ];
   else if (path === '/api/catalog/documents') allowed = ['type', 'q', 'page', 'pageSize'];
+  else if (path === '/api/catalog/facets') allowed = ['category'];
   else if (path === '/api/catalog/categories') allowed = ['tree'];
   else if (path.startsWith('/api/catalog/')) allowed = [];
   else return false;
   const seen = new Set<string>();
   for (const [key, value] of params) {
-    if (!allowed.includes(key) || seen.has(key)) return true;
+    const spec =
+      path === '/api/catalog/products' &&
+      /^spec\.[0-9a-f-]{36}\.(option|min|max|boolean|text)$/i.test(key);
+    if ((!allowed.includes(key) && !spec) || seen.has(key)) return true;
     seen.add(key);
-    const max = key === 'q' ? 80 : ['category', 'brand'].includes(key) ? 180 : 40;
+    const max =
+      key === 'cursor'
+        ? 1024
+        : spec
+          ? 100
+          : key === 'q'
+            ? 80
+            : ['category', 'brand'].includes(key)
+              ? 180
+              : 40;
     if (value.length > max || /[\u0000-\u001f\u007f]/.test(value)) return true;
     if (['category', 'brand'].includes(key) && value && !/^[a-z0-9_-]+$/i.test(value)) return true;
     if (['featured', 'new', 'asc', 'tree'].includes(key) && !['true', 'false', ''].includes(value))

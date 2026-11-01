@@ -1,0 +1,8 @@
+{
+  "executedAt": "2026-11-01T06:45:18.789Z",
+  "source": "Applied isolated local PostgreSQL 29-migration schema; official Supabase generation still requires Docker",
+  "sha256": "abfc58636730d586f1c94aa21eacab32faa7c1bd1c0e7728481ed2ad19cc3118",
+  "result": "Regenerated from final applied schema",
+  "generatedPublicContractsMatch28And29": true,
+  "note": "Initial working-file fingerprint differed from regeneration; generated definitions retained and application validation rerun. Official Supabase type generation remains a separate platform gate."
+}

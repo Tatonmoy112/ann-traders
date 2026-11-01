@@ -6,6 +6,7 @@
       "env": [
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_SITE_URL",
         "R2_ACCOUNT_ID",
         "R2_ENVIRONMENT",
         "R2_PUBLIC_BASE_URL"

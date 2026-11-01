@@ -1,29 +1,22 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/client';
 import {
   FileSpreadsheet,
   Search,
-  Filter,
   CheckCircle2,
-  Clock,
   Building,
   User,
   Phone,
   Mail,
-  MapPin,
   ExternalLink,
-  ChevronRight,
   RotateCcw,
   Loader2,
   Check,
   X,
   Copy,
-  DollarSign,
-  AlertCircle,
-  FileText,
 } from 'lucide-react';
 
 export interface InquiryRecord {
@@ -64,8 +57,6 @@ interface InquiriesResponse {
 }
 
 export function InquiriesManager() {
-  const [data, setData] = useState<InquiriesResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Filters
@@ -83,28 +74,23 @@ export function InquiriesManager() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  const fetchInquiries = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (searchQuery.trim()) params.set('q', searchQuery.trim());
-      params.set('page', String(page));
-      params.set('pageSize', '20');
-
-      const res = await api<InquiriesResponse>(`/api/admin/inquiries?${params.toString()}`);
-      setData(res);
-    } catch (err) {
-      setError((err as Error).message || 'Failed to load inquiries');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [statusFilter, searchQuery, page]);
-
-  useEffect(() => {
-    fetchInquiries();
-  }, [fetchInquiries]);
+  const {
+    data,
+    isLoading,
+    error: queryError,
+    refetch: fetchInquiries,
+  } = useQuery({
+    queryKey: ['inquiries', statusFilter, searchQuery, page],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        status: statusFilter,
+        q: searchQuery.trim(),
+        page: String(page),
+        pageSize: '20',
+      });
+      return api<InquiriesResponse>('/api/admin/inquiries?' + params);
+    },
+  });
 
   // Open drawer and sync edit state
   const handleOpenDrawer = (inq: InquiryRecord) => {
@@ -151,7 +137,7 @@ export function InquiriesManager() {
           : null,
       );
     } catch (err) {
-      alert((err as Error).message || 'Failed to save changes');
+      setError((err as Error).message || 'Failed to save changes');
     } finally {
       setIsSaving(false);
     }
@@ -214,6 +200,11 @@ ${selectedInquiry.admin_notes ? `Notes: ${selectedInquiry.admin_notes}` : ''}
 
   return (
     <div className="space-y-6">
+      {(error || queryError) && (
+        <div className="alert" role="alert">
+          {error || queryError?.message}
+        </div>
+      )}
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -222,7 +213,8 @@ ${selectedInquiry.admin_notes ? `Notes: ${selectedInquiry.admin_notes}` : ''}
             <span>B2B RFQ & Quotation Inquiries</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Incoming factory procurement requests, volume pricing inquiries, and proforma quote management.
+            Incoming factory procurement requests, volume pricing inquiries, and proforma quote
+            management.
           </p>
         </div>
 
@@ -272,9 +264,7 @@ ${selectedInquiry.admin_notes ? `Notes: ${selectedInquiry.admin_notes}` : ''}
             <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">
               New RFQs
             </span>
-            {stats.new > 0 && (
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-            )}
+            {stats.new > 0 && <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />}
           </div>
           <span className="text-2xl font-black text-amber-900 mt-0.5 block">{stats.new}</span>
         </button>
@@ -377,7 +367,8 @@ ${selectedInquiry.admin_notes ? `Notes: ${selectedInquiry.admin_notes}` : ''}
             <FileSpreadsheet className="w-10 h-10 text-slate-300 mx-auto" />
             <h3 className="text-sm font-bold text-slate-700">No inquiries found</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              No quote requests match your active status or search query. Customer inquiries submitted via the Client Portal will appear here in real-time.
+              No quote requests match your active status or search query. Customer inquiries
+              submitted via the Client Portal will appear here in real-time.
             </p>
           </div>
         ) : (
@@ -582,7 +573,9 @@ ${selectedInquiry.admin_notes ? `Notes: ${selectedInquiry.admin_notes}` : ''}
                   Requisition Specification
                 </span>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">{selectedInquiry.product_name}</h4>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    {selectedInquiry.product_name}
+                  </h4>
                   {selectedInquiry.variant_sku && (
                     <span className="text-xs font-mono text-slate-600">
                       SKU: {selectedInquiry.variant_sku}

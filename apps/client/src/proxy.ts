@@ -31,16 +31,20 @@ export function proxy(request: NextRequest) {
   if (Buffer.byteLength(request.url, 'utf8') > 4096)
     return rejected('Request URL is too long', 414);
   const purge = path === '/api/catalog/revalidate';
-  const methods = purge ? ['POST', 'OPTIONS'] : READ_METHODS;
+  const event = path === '/api/catalog/events';
+  const methods = purge || event ? ['POST', 'OPTIONS'] : READ_METHODS;
   if (!methods.includes(request.method))
     return rejected('Method not allowed', 405, { Allow: methods.join(', ') });
   if (request.method === 'POST') {
     const length = request.headers.get('content-length');
     if (
-      (length && (!/^\d+$/.test(length) || Number(length) > 0)) ||
-      request.headers.has('transfer-encoding')
+      (length && (!/^\d+$/.test(length) || Number(length) > (event ? 2048 : 0))) ||
+      (!event && request.headers.has('transfer-encoding'))
     )
-      return rejected('This endpoint does not accept a request body', 413);
+      return rejected(
+        event ? 'Event too large' : 'This endpoint does not accept a request body',
+        413,
+      );
     const origin = request.headers.get('origin');
     const expected = process.env.NEXT_PUBLIC_SITE_URL
       ? new URL(process.env.NEXT_PUBLIC_SITE_URL).origin

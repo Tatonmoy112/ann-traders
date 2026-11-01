@@ -1,0 +1,18 @@
+{
+  "executedAt": "2026-11-01T06:29:06.077Z",
+  "result": "PASS",
+  "loadedPublicR2Images": 2,
+  "desktopFrameRatios": [
+    1.3344827586206895,
+    1.3344827586206895,
+    1.3298969072164948
+  ],
+  "mobileFrameRatios": [
+    1.3333333333333333,
+    1.3333333333333333,
+    1.3333333333333333
+  ],
+  "demoContacts": "Explicitly labeled with no real messaging links",
+  "invalidSyntheticImage": "Source HTTP 403; placeholder retained",
+  "runtimeErrors": []
+}

@@ -19,6 +19,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         .from('product_documents')
         .select('id,title,document_type,is_public,created_at,bytes,file_extension,variant_id')
         .eq('product_id', id)
+        .is('retired_at', null)
         .order('sort_order')
         .limit(100),
     ]);
@@ -37,7 +38,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .object({
         media: z.uuid(),
         revision: z.number().int().positive(),
-        operation: z.enum(['primary', 'alt', 'detach', 'order']),
+        operation: z.enum(['primary', 'alt', 'detach', 'order', 'variant']),
         alt: z.string().max(255).default(''),
       })
       .parse(await body(request));

@@ -4,7 +4,6 @@ const config: NextConfig = {
   output: 'standalone',
   transpilePackages: ['@ann/ui', '@ann/validation', '@ann/domain', '@ann/database', '@ann/storage'],
   images: {
-    dangerouslyAllowSVG: true,
     remotePatterns: [
       { protocol: 'https', hostname: 'imagedelivery.net' },
       ...(process.env.R2_PUBLIC_BASE_URL

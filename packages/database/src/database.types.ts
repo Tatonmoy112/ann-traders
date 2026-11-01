@@ -772,6 +772,7 @@ export type Database = {
           bytes: number | null;
           uploaded_by: string | null;
           updated_at: string;
+          retired_at: string | null;
         };
         Insert: {
           id?: string;
@@ -789,6 +790,7 @@ export type Database = {
           bytes?: number | null;
           uploaded_by?: string | null;
           updated_at?: string;
+          retired_at?: string | null;
         };
         Update: {
           id?: string;
@@ -806,6 +808,7 @@ export type Database = {
           bytes?: number | null;
           uploaded_by?: string | null;
           updated_at?: string;
+          retired_at?: string | null;
         };
         Relationships: [
           {
@@ -1639,6 +1642,11 @@ export type Database = {
         Args: { p_name: string; p_code: string; p_slug: string };
         Returns: string;
       };
+      duplicate_catalog_product: {
+        Args: { product: string; expected_revision: number };
+        Returns: string;
+      };
+      get_category_attribute_rules: { Args: { category: string }; Returns: Json };
       image_asset_referenced: { Args: { asset: string }; Returns: boolean };
       list_admin_products: {
         Args: {
@@ -1662,6 +1670,18 @@ export type Database = {
           active: boolean;
         };
         Returns: undefined;
+      };
+      product_document_action: {
+        Args: {
+          product: string;
+          expected_revision: number;
+          document: string;
+          operation: string;
+          title_text?: string;
+          visible?: boolean;
+          variant?: string;
+        };
+        Returns: number;
       };
       product_lifecycle: {
         Args: { product: string; expected_revision: number; operation: string };
@@ -1847,6 +1867,20 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_specifications: {
+        Row: {
+          product_id: string | null;
+          code: string | null;
+          label: string | null;
+          text: string | null;
+          number: string | null;
+          boolean: boolean | null;
+          option: string | null;
+          unit: string | null;
+          sort_order: number | null;
+        };
+        Relationships: [];
+      };
       products: {
         Row: {
           id: string | null;
@@ -1899,6 +1933,23 @@ export type Database = {
       };
     };
     Functions: {
+      browse_product_cards: {
+        Args: {
+          category_filter?: string;
+          brand_filter?: string;
+          search_query?: string;
+          featured_only?: boolean;
+          new_only?: boolean;
+          page_number?: number;
+          page_size?: number;
+          sort_field?: string;
+          sort_ascending?: boolean;
+          attribute_filters?: Json;
+          after_cursor?: Json;
+        };
+        Returns: Json;
+      };
+      category_filters: { Args: { category_filter?: string }; Returns: Json };
       list_product_cards: {
         Args: {
           category_filter?: string;
